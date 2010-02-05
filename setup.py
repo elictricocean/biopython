@@ -243,6 +243,7 @@ PACKAGES = [
     'Bio.Pathway.Rep',
     'Bio.PDB',
     'Bio.PDB.mmCIF',
+    'Bio.Pfam',
     'Bio.PopGen',
     'Bio.PopGen.Async',
     'Bio.PopGen.FDist',
