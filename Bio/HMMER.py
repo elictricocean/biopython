@@ -1,5 +1,28 @@
 
+"""
+Based on code from PfamScan from: ftp://ftp.sanger.ac.uk/pub/rdf/PfamScanBeta/
 
+Copyright (c) 2009: Genome Research Ltd.
+
+Authors: Jaina Mistry (jm14@sanger.ac.uk), John Tate (jt6@sanger.ac.uk)
+
+This is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+or see the on-line version at http://www.gnu.org/copyleft/gpl.txt
+
+
+"""
 
 import re
 import string
@@ -7,6 +30,7 @@ import os
 import subprocess
 import Bio.Seq
 import Bio.SeqRecord
+
 
 def parseHMMER3( fh ):
 	io = HMMResultsIO()
@@ -34,7 +58,7 @@ class MissingDBFile(Exception):
 		return "Missing DB file: %s" % (self.fileName)
 
 
-
+instanceNum = 0
 
 class HMMER3Scan:
 	"""HMMER3 Scan Program Control Class."""
@@ -48,16 +72,40 @@ class HMMER3Scan:
 Setup HMMERPfam Scan Parser
 db   : Path to HMMER database
 """
+		global instanceNum
 		self._hmmlib = [ db ]
 		self._as = False		
 		self._read_ = {}
 		self.score = score
+		self.cutoff = None
 		self.comment = True
+		self.params = []
 		self.results = []
+		self.instanceNum = instanceNum
+		instanceNum += 1
 		for ext in [ "h3f", "h3i", "h3m", "h3p" ]:
 			extPath = "%s.%s" % (db, ext)
 			if ( not os.path.exists( extPath ) ) :
 				raise MissingDBFile( extPath )
+
+	def cut_ga(self):
+		"""use profile's GA gathering cutoffs to set all thresholding"""
+		self.score = None
+		self.cutoff = "--cut_ga"
+
+	def cut_nc(self):
+		"""use profile's NC noise cutoffs to set all thresholding"""
+		self.score = None
+		self.cutoff = "--cut_nc"
+
+	def cut_tc(self):
+		"""use profile's TC trusted cutoffs to set all thresholding"""
+		self.score = None
+		self.cutoff = "--cut_tc"
+
+	def use_acc(self):
+		"""prefer accessions over names in alignment units"""
+		self.params.extend( "--acc" )
 
 	def search(self, file=None):
 		if file is None:
@@ -86,7 +134,7 @@ db   : Path to HMMER database
 			scanSet = seqIn	
 			
 		"""Run hmmscan against a sequence"""
-		tmpPath = "/tmp/%s.%d" % ( "pfamScanHmmer", os.getpid() ) 
+		tmpPath = "/tmp/%s.%d.%d" % ( "pfamScanHmmer", os.getpid(), self.instanceNum ) 
 		tmpFile = open( tmpPath, "w" )
 		for seq in scanSet:
 			tmpFile.write( seq.format("fasta") )
@@ -96,7 +144,10 @@ db   : Path to HMMER database
 			cmdline = ["hmmscan", "--notextw" ]
 			if self.score is not None:
 				cmdline.extend( ['-T', "%e" % (self.score) ] )
+			if self.cutoff is not None:
+				cmdline.append( self.cutoff )
 			cmdline.extend( [ db, tmpPath] )
+			#cmdline.extend( self.params )
 			pipe = subprocess.Popen( cmdline, stdout=subprocess.PIPE).stdout
 			for result in parseMultiHMMER3( pipe ):
 				yield result
@@ -735,6 +786,7 @@ class HMMUnit(HMMMatch):
 	Describes one HMMER alignment
 	includes:
 	self.Domain : Is Domain?
+	self.name : Name of HMM hit
 	self.proteinCoos = 
 	self.seqEvalue = sequence Evalue (float)
 	self.domain = 
