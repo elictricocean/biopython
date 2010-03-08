@@ -637,9 +637,11 @@ class EmblScanner(InsdcScanner):
             'SV' : 'version', # SV line removed in June 2006, now part of ID line
             'DE' : 'definition',
             #'RN' : 'reference_num',
+            #'RC' : reference comment... TODO
             #'RP' : 'reference_bases',
             #'RX' : reference cross reference... DOI or Pubmed
-            'RA' : 'authors',
+            'RG' : 'consrtm', #optional consortium
+            #'RA' : 'authors',
             #'RT' : 'title',
             'RL' : 'journal',
             'OS' : 'organism',
@@ -717,6 +719,14 @@ class EmblScanner(InsdcScanner):
                     # TODO - Data reference...
                     # How should we store the secondary identifier (if present)?  Ignore it?
                     pass
+                elif line_type == 'RA':
+                    # Remove trailing ; at end of authors list
+                    consumer.authors(data.rstrip(";"))
+                elif line_type == 'PR':
+                    # Remove trailing ; at end of the project reference
+                    # In GenBank files this corresponds to the old PROJECT
+                    # line which is being replaced with the DBLINK line.
+                    consumer.project(data.rstrip(";"))
                 elif line_type in consumer_dict:
                     #Its a semi-automatic entry!
                     getattr(consumer, consumer_dict[line_type])(data)

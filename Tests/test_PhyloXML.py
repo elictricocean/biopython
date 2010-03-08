@@ -13,7 +13,10 @@ from itertools import izip, chain
 from cStringIO import StringIO
 
 from Bio.Phylo import PhyloXML as PX, PhyloXMLIO
-
+from Bio import Alphabet
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Align.Generic import  Alignment
 
 # Example PhyloXML files
 EX_APAF = 'PhyloXML/apaf.xml'
@@ -33,24 +36,6 @@ def unzip(fname):
     assert zipfile.is_zipfile(fname)
     z = zipfile.ZipFile(fname)
     return StringIO(z.read(z.filelist[0].filename))
-
-
-# ---------------------------------------------------------
-# Utility tests
-
-class UtilTests(unittest.TestCase):
-    """Tests for PhyloXML utility functions."""
-    def test_dump_tags(self):
-        """Count and confirm the number of tags in each example XML file."""
-        for source, count in izip(
-                (EX_APAF, EX_BCL2, EX_PHYLO, unzip(EX_MOLLUSCA),
-                    # unzip(EX_METAZOA), unzip(EX_NCBI),
-                    ),
-                (509, 1496, 289, 24311, 322367, 972830)):
-            output = StringIO()
-            PhyloXMLIO.dump_tags(source, output)
-            output.seek(0)
-            self.assertEquals(len(output.readlines()), count)
 
 
 # ---------------------------------------------------------
@@ -528,6 +513,7 @@ class TreeTests(unittest.TestCase):
 
 class WriterTests(unittest.TestCase):
     """Tests for serialization of objects to phyloXML format."""
+    # TODO: make round-tripping safer w/ StringIO or tempfile
     def _stash_rewrite_and_call(self, fname, test_cases):
         """Safely run a series of tests on a parsed and rewritten file.
 
@@ -540,6 +526,8 @@ class WriterTests(unittest.TestCase):
         that simply handles renaming and finally restoring the original.
         """
         phx = PhyloXMLIO.read(fname)
+        if os.path.exists(fname + '~'):
+            os.remove(fname + '~')
         os.rename(fname, fname + '~')
         try:
             PhyloXMLIO.write(phx, fname)
@@ -548,6 +536,9 @@ class WriterTests(unittest.TestCase):
                 for test in tests:
                     getattr(inst, test)()
         finally:
+            # XXX not safe!
+            if os.path.exists(fname):
+                os.remove(fname)
             os.rename(fname + '~', fname)
 
     def test_apaf(self):
@@ -648,10 +639,20 @@ class MethodTests(unittest.TestCase):
         pseq2 = PX.Sequence.from_seqrecord(srec)
         # TODO: check the round-tripped attributes again
 
-
     def test_get_alignment(self):
-        # TODO: load a Phylogeny w/ aligned Sequences, call, check attrs
-        pass
+        tree = self.phyloxml.phylogenies[0]
+        self.assertEqual(tree.get_alignment(), None)
+        # Add sequences to the terminals
+        alphabet = Alphabet.Gapped(Alphabet.generic_dna)
+        for tip, seqstr in izip(tree.get_terminals(),
+                ('AA--TTA', 'AA--TTG', 'AACCTTC')):
+            tip.sequences.append(PX.Sequence.from_seqrecord(
+                SeqRecord(Seq(seqstr, alphabet), id=str(tip))))
+        # Check the alignment
+        aln = tree.get_alignment()
+        self.assert_(isinstance(aln, Alignment))
+        self.assertEqual(len(aln), 3)
+        self.assertEqual(aln.get_alignment_length(), 7)
 
     # Syntax sugar
 
