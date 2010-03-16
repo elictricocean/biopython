@@ -9,7 +9,7 @@
 # available and licensed separately.  Please consult www.biosql.org
 
 _dbutils = {}
-
+import re
 class Generic_dbutils:
     """Default database utilities."""
     def __init__(self):
@@ -26,12 +26,10 @@ class Generic_dbutils:
         cursor.execute(sql)
         rv = cursor.fetchone()
         return rv[0]
-    
-    def execute(self, cursor, sql, args=None):
-        """Just execute an sql command.
-        """
-        cursor.execute(sql, args or ())
 
+    def execute(self, cursor, sql, args=None):
+        cursor.execute(sql, args or ())
+        
     def autocommit(self, conn, y = 1):
         # Let's hope it was not really needed
         pass
@@ -60,6 +58,21 @@ class Mysql_dbutils(Generic_dbutils):
             return cursor.lastrowid
         
 _dbutils["MySQLdb"] = Mysql_dbutils
+
+class zxJDBC_dbutils(Generic_dbutils):
+    reStrOpt=re.compile(r'\%.')
+    def last_id(self, cursor, table):
+        #zxJDBC cursors have a lastrowid value, but it always seems to be null...
+        cursor.execute("SELECT LAST_INSERT_ID()")
+        lastrowid = cursor.fetchone()[0]
+        return lastrowid
+
+    def execute(self, cursor, sql, args=None):
+        """Just execute an sql command.
+        """
+        cursor.execute(sql.replace("%s", "?"), args or ())        
+
+_dbutils["zxJDBC"] = zxJDBC_dbutils
 
 
 class _PostgreSQL_dbutils(Generic_dbutils):

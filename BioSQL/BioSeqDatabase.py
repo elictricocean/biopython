@@ -15,6 +15,7 @@ database, and is compatible with the BioSQL standards.
 import BioSeq
 import Loader
 import DBUtils
+import os
 
 _POSTGRES_RULES_PRESENT = False # Hack for BioSQL Bug 2839
 
@@ -36,11 +37,55 @@ def open_database(driver = "MySQLdb", **kwargs):
     host -> the hostname of the database
     database or db -> the name of the database
     """
-    module = __import__(driver)
-    connect = getattr(module, "connect")
-
-    # Different drivers use different keywords...
     kw = kwargs.copy()
+    conn = None
+    #See if the user is requesting a generic driver
+    if driver == "MySQL":
+        if os.name == 'java' :
+            from com.ziclix.python.sql import zxJDBC
+            module = zxJDBC
+            kw['driver']="org.gjt.mm.mysql.Driver"
+            driverName = "mysql"
+            db=None
+            host="localhost"
+            if "database" in kw:
+                db = kw["database"]
+                del kw["database"]
+            if "db" in kw:
+                db = kw["db"]
+                del kw["db"]
+            if "host" in kw:
+                host = kw["host"]
+                del kw["host"]
+            if "passwd" in kw:
+                kw["password"] = kw["passwd"]
+                del kw["passwd"]
+            if db is not None:
+                url= "jdbc:%s://%s/%s" % (driverName, host, db )
+            else:
+                url= "jdbc:%s://%s/" % (driverName, host  )
+            conn = zxJDBC.connect(url, kw['user'], kw['password'], kw['driver'] )
+        else:
+            import MySQLdb
+            module = MySQLdb
+            driver = "MySQLdb"
+    elif driver == "PostgreSQL":
+        if os.name == 'java' :
+            from com.ziclix.python.sql import zxJDBC
+            module = zxJDBC
+            kw['driver']="org.postgresql.Driver"
+            driverName = "postgresql"
+        else:
+            import psycopg
+            module = psycopg
+            driver = "psycopg"
+    else:
+        #if they have not requested a generic driver, assume they are requesting a specific one
+        module = __import__(driver)
+
+    connect = getattr(module, "connect")
+          
+        
     if driver == "MySQLdb":
         if "database" in kw:
             kw["db"] = kw["database"]
@@ -61,7 +106,7 @@ def open_database(driver = "MySQLdb", **kwargs):
     # SQLite connect takes the database name as input
     if driver in ["sqlite3"]:
         conn = connect(kw["database"])
-    else:
+    elif conn is None:
         try:
             conn = connect(**kw)
         except module.InterfaceError:
@@ -173,7 +218,7 @@ class DBServer:
             self.adaptor.cursor.execute(sql)
         # 2. MySQL needs the database loading split up into single lines of
         # SQL executed one at a time
-        elif self.module_name in ["MySQLdb", "sqlite3"]:
+        elif self.module_name in ["MySQLdb", "sqlite3", "zxJDBC"]:
             sql_parts = sql.split(";") # one line per sql command
             for sql_line in sql_parts[:-1]: # don't use the last item, it's blank
                 self.adaptor.cursor.execute(sql_line)
@@ -219,7 +264,7 @@ class Adaptor:
         return self.conn.close()
 
     def fetch_dbid_by_dbname(self, dbname):
-        self.execute(
+        self.dbutils.execute( self.cursor,
             r"select biodatabase_id from biodatabase where name = %s",
             (dbname,))
         rv = self.cursor.fetchall()
@@ -235,7 +280,7 @@ class Adaptor:
         if dbid:
             sql += " and biodatabase_id = %s"
             fields.append(dbid)
-        self.execute(sql, fields)
+        self.dbutils.execute(self.cursor, sql, fields)
         rv = self.cursor.fetchall()
         if not rv:
             raise IndexError("Cannot find display id %r" % name)
@@ -249,7 +294,7 @@ class Adaptor:
         if dbid:
             sql += " and biodatabase_id = %s"
             fields.append(dbid)
-        self.execute(sql, fields)
+        self.dbutils.execute(self.cursor, sql, fields)
         rv = self.cursor.fetchall()
         if not rv:
             raise IndexError("Cannot find accession %r" % name)
@@ -280,7 +325,7 @@ class Adaptor:
         if dbid:
             sql += " and biodatabase_id = %s"
             fields.append(dbid)
-        self.execute(sql, fields)
+        self.dbutils.execute(self.cursor, sql, fields)
         rv = self.cursor.fetchall()
         if not rv:
             raise IndexError("Cannot find version %r" % name)
@@ -295,7 +340,7 @@ class Adaptor:
         if dbid:
             sql += " and biodatabase_id = %s"
             fields.append(dbid)
-        self.execute(sql, fields)
+        self.dbutils.execute(self.cursor, sql, fields)
         rv = self.cursor.fetchall()
         if not rv:
             raise IndexError("Cannot find display id %r" % identifier)
@@ -322,10 +367,10 @@ class Adaptor:
         returns a list of items. This parses them out of the 2D list
         they come as and just returns them in a list.
         """
-        return self.execute_and_fetch_col0(sql, args)
+        return self.cursor.execute_and_fetch_col0(sql, args)
 
     def execute_one(self, sql, args=None):
-        self.execute(sql, args or ())
+        self.dbutils.execute(self.cursor, sql, args or ())
         rv = self.cursor.fetchall()
         assert len(rv) == 1, "Expected 1 response, got %d" % len(rv)
         return rv[0]
@@ -333,7 +378,7 @@ class Adaptor:
     def execute(self, sql, args=None):
         """Just execute an sql command.
         """
-        self.dbutils.execute(self.cursor, sql, args)
+        self.dbutils.execute(self.cursor, sql, args or ())
 
     def get_subseq_as_string(self, seqid, start, end):
         length = end - start
@@ -350,13 +395,16 @@ class Adaptor:
             """select SUBSTR(seq, %s, %s)
                      from biosequence where bioentry_id = %s""",
             (start+1, length, seqid))[0])
+        #seq=str(self.execute_one(
+        #     "select seq from biosequence where bioentry_id = %s",  [seqid] )[0])
+        #return seq[start:end]
 
     def execute_and_fetch_col0(self, sql, args=None):
-        self.execute(sql, args or ())
+        self.dbutils.execute(self.cursor, sql, args or ())
         return [field[0] for field in self.cursor.fetchall()]
 
     def execute_and_fetchall(self, sql, args=None):
-        self.execute(sql, args or ())
+        self.dbutils.execute(self.cursor, sql, args or ())
         return self.cursor.fetchall()
 
 _allowed_lookups = {
