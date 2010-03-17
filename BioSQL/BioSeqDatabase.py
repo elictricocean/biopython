@@ -40,12 +40,16 @@ def open_database(driver = "MySQLdb", **kwargs):
     kw = kwargs.copy()
     conn = None
     #See if the user is requesting a generic driver
-    if driver == "MySQL":
+    if driver in [ "MySQL", "PostgreSQL" ]:
         if os.name == 'java' :
             from com.ziclix.python.sql import zxJDBC
             module = zxJDBC
-            kw['driver']="org.gjt.mm.mysql.Driver"
-            driverName = "mysql"
+            if driver=="MySQL":
+                kw['driver']="org.gjt.mm.mysql.Driver"
+                driverName = "mysql"
+            if driver=="PostgreSQL":
+                kw['driver']="org.postgresql.Driver"
+                driverName = "postgresql"
             db=None
             host="localhost"
             if "database" in kw:
@@ -66,19 +70,14 @@ def open_database(driver = "MySQLdb", **kwargs):
                 url= "jdbc:%s://%s/" % (driverName, host  )
             conn = zxJDBC.connect(url, kw['user'], kw['password'], kw['driver'] )
         else:
-            import MySQLdb
-            module = MySQLdb
-            driver = "MySQLdb"
-    elif driver == "PostgreSQL":
-        if os.name == 'java' :
-            from com.ziclix.python.sql import zxJDBC
-            module = zxJDBC
-            kw['driver']="org.postgresql.Driver"
-            driverName = "postgresql"
-        else:
-            import psycopg
-            module = psycopg
-            driver = "psycopg"
+            if driver=="MySQL":
+                import MySQLdb
+                module = MySQLdb
+                driver = "MySQLdb"
+            if driver=="PostgreSQL":
+                import psycopg
+                module = psycopg
+                driver = "psycopg"
     else:
         #if they have not requested a generic driver, assume they are requesting a specific one
         module = __import__(driver)

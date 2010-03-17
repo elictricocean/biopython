@@ -55,12 +55,12 @@ SQL_FILE = os.path.join(os.getcwd(), "BioSQL", DBSCHEMA)
 assert os.path.isfile(SQL_FILE), "Missing %s" % SQL_FILE
 
 #Check the database driver is installed:
-try:
-    __import__(DBDRIVER)
-except ImportError:
-    message = "Install %s or correct Tests/setup_BioSQL.py "\
-              "(not important if you do not plan to use BioSQL)." % DBDRIVER
-    raise MissingExternalDependencyError(message)
+#try:
+#    __import__(DBDRIVER)
+#except ImportError:
+#    message = "Install %s or correct Tests/setup_BioSQL.py "\
+#              "(not important if you do not plan to use BioSQL)." % DBDRIVER
+#    raise MissingExternalDependencyError(message)
 
 #Could check the username, password and host work here,
 #but this only seems to work for the first unit test
