@@ -15,14 +15,7 @@ import itertools
 import random
 import re
 
-
-def trim_str(text, maxlen=60):
-    """Truncate a string to maxlen characters, including ellipsis."""
-    assert isinstance(text, basestring), \
-            "%s should be a string, not a %s" % (text, type(text))
-    if len(text) > maxlen:
-        return text[:maxlen-3] + '...'
-    return text
+import _sugar
 
 # General tree-traversal algorithms
 
@@ -162,7 +155,7 @@ class TreeElement(object):
         """Show this object's constructor with its primitive arguments."""
         s = '%s(%s)' % (self.__class__.__name__,
                         ', '.join("%s='%s'"
-                                  % (key, trim_str(unicode(val)))
+                                  % (key, _sugar.trim_str(unicode(val)))
                             for key, val in self.__dict__.iteritems()
                             if val is not None
                             and type(val) in (str, int, float, bool, unicode)))
@@ -439,7 +432,7 @@ class TreeMixin(object):
         """True if all direct descendents are terminal."""
         if self.root.is_terminal():
             return False
-        for clade in self.clades:
+        for clade in self.root.clades:
             if not clade.is_terminal():
                 return False
         return True
@@ -629,14 +622,42 @@ class Tree(TreeElement, TreeMixin):
             node.name = name
         return rtree
 
+    # Attributes assumed by TreeMixin
+
     @property
     def clade(self):
         """The first subtree in this tree (not itself)."""
         return self.root
 
     def is_terminal(self):
-        """Returns True if the root of this tree is terminal."""
+        """True if the root of this tree is terminal."""
         return (not self.root.clades)
+
+    # Convention from SeqRecord and Alignment classes  
+
+    def __format__(self, format_spec):
+        """Serialize the tree as a string in the specified file format.
+
+        This method supports the format() built-in function added in Python
+        2.6/3.0. The format_spec should be a lower case string supported by
+        Bio.Phylo.write as an output file format. 
+        """
+        if format_spec:
+            from StringIO import StringIO
+            import _io
+            handle = StringIO()
+            _io.write([self], handle, format_spec)
+            return handle.getvalue()
+        else:
+            # Follow python convention and default to using __str__
+            return str(self)
+
+    def format(self, format):
+        """Serialize the tree as a string in the specified file format.
+
+        This duplicates the __format__ magic method for pre-2.6 Pythons.
+        """
+        return self.__format__(format)
 
 
 class Subtree(TreeElement, TreeMixin):
@@ -657,21 +678,14 @@ class Subtree(TreeElement, TreeMixin):
         self.name = name
         self.branch_length = branch_length
 
-    def is_terminal(self):
-        """Returns True if this is a terminal (leaf) node."""
-        return (not self.clades)
-
-    # Properties may be overridden by subclasses
-
-    # XXX kind of superfluous
-    # @property
-    # def label(self):
-    #     return str(self)
-
     @property
     def root(self):
         """Allow TreeMixin methods to traverse subtrees properly."""
         return self
+
+    def is_terminal(self):
+        """True if this is a terminal (leaf) node."""
+        return (not self.clades)
 
     # Sequence-type behavior methods
 

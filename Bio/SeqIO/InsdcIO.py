@@ -114,12 +114,19 @@ def _insdc_location_string_ignoring_strand_and_subfeatures(feature):
     else:
         ref = ""
     assert not feature.ref_db
-    if feature.location.start == feature.location.end \
-    and isinstance(feature.location.end, SeqFeature.ExactPosition):
-        #Special case, 12^13 gets mapped to location 12:12
+    if isinstance(feature.location.start, SeqFeature.ExactPosition) \
+    and isinstance(feature.location.end, SeqFeature.ExactPosition) \
+    and feature.location.start.position == feature.location.end.position:
+        #Special case, for 12:12 return 12^13
         #(a zero length slice, meaning the point between two letters)
         return "%s%i^%i" % (ref, feature.location.end.position,
                             feature.location.end.position+1)
+    if isinstance(feature.location.start, SeqFeature.ExactPosition) \
+    and isinstance(feature.location.end, SeqFeature.ExactPosition) \
+    and feature.location.start.position+1 == feature.location.end.position:
+        #Special case, for 11:12 return 12 rather than 12..12
+        #(a length one slice, meaning a single letter)
+        return "%s%i" % (ref, feature.location.end.position)
     else:
         #Typical case, e.g. 12..15 gets mapped to 11:15
         return ref \
@@ -417,11 +424,14 @@ class GenBankWriter(_InsdcWriter):
             #    Transgenic               TGN - ??? map to SYN ???
             #    Unclassified             UNC - map to UNK
             #    Viral                    VRL - common
+            #
+            #(plus XXX for submiting which we can map to UNK)
             embl_to_gbk = {"FUN":"PLN",
                            "HUM":"PRI",
                            "MUS":"ROD",
                            "PRO":"BCT",
                            "UNC":"UNK",
+                           "XXX":"UNK",
                            }
             try:
                 division = embl_to_gbk[division]
@@ -831,7 +841,7 @@ class EmblWriter(_InsdcWriter):
             division = "UNC"
         if division in ["PHG", "ENV", "FUN", "HUM", "INV", "MAM", "VRT",
                         "MUS", "PLN", "PRO", "ROD", "SYN", "TGN", "UNC",
-                        "VRL"]:
+                        "VRL", "XXX"]:
             #Good, already EMBL style
             #    Division                 Code
             #    -----------------        ----
@@ -850,6 +860,8 @@ class EmblWriter(_InsdcWriter):
             #    Transgenic               TGN
             #    Unclassified             UNC (i.e. unknown)
             #    Viral                    VRL
+            #
+            #(plus XXX used for submiting data to EMBL)
             pass
         else:
             #See if this is in GenBank style & can be converted.
