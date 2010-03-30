@@ -32,6 +32,11 @@ import Bio.Seq
 import Bio.SeqRecord
 
 
+
+def parse( fh, type="hmmer3" ):
+    if type=="hmmer3":
+        return parseMultiHMMER3(fh)
+
 def parseHMMER3( fh ):
     io = HMMResultsIO()
     return io.parseHMMER3( fh )
@@ -241,6 +246,9 @@ class HMMResults:
         except IndexError:
             raise StopIteration
 
+    def __getitem__(self, i):
+        return self.units[ i ]
+
     def addHMMSeq(self, hmmSeq):
         self.seqs[ hmmSeq.name ] = hmmSeq    
 
@@ -319,7 +327,7 @@ class HMMResultsIO:
         return hmmRes
 
     def parseMultiHMMER3(self, fh):
-        hmmResAll = []
+        hmmResAll = []#; import pdb; pdb.set_trace()
         program = None
         try:
             while(1):
@@ -390,7 +398,7 @@ class HMMResultsIO:
                 continue                
             res = re.search(r'^sequence E-value threshold: <= (\d+)', line)
             if res:
-                hmmRes.evalueThr = res.group(1)
+                hmmRes.evalueThr = float(res.group(1))
                 continue
             res = re.search(r'^# Random generator seed:      (\d+)', line)
             if res:
@@ -441,11 +449,11 @@ class HMMResultsIO:
                 desc = " ".join( sMatch[ 10: ] )
             hmmRes.addHMMSeq(
                 HMMSequence(
-                        evalue     = sMatch[1],
-                        bits       = sMatch[2],
-                        bias       = sMatch[3],
-                        exp        = sMatch[7],
-                        numberHits = sMatch[8],
+                        evalue     = float(sMatch[1]),
+                        bits       = float(sMatch[2]),
+                        bias       = float(sMatch[3]),
+                        exp        = float(sMatch[7]),
+                        numberHits = int(sMatch[8]),
                         name       = sMatch[9],
                         desc       = desc         
                 )
@@ -540,7 +548,7 @@ class HMMResultsIO:
                         bits      = float(dMatch[3]),
                         bias      = dMatch[4],
                         domEvalue = float(dMatch[5]),
-                        evalue    = dMatch[6],
+                        evalue    = float(dMatch[6]),
                         hmmFrom   = int(dMatch[7]),
                         hmmTo     = int(dMatch[8]),
                         seqFrom   = int(dMatch[10]),
@@ -827,9 +835,9 @@ class HMMUnit(HMMMatch):
                 setattr( self, a, kwargs[a] )
             else:
                 raise TypeError( "__init__() got an unexpected keyword argument '%s'" % (a) )
-    
+                
     def __str__(self):
-        return ("%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %8s %9s %3d %-8s ") % (
+        outStr = "%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %8e %9e %3d %-8s " % (
                     self.seqName,
                     int(self.seqFrom),
                     int(self.seqTo),
@@ -845,4 +853,4 @@ class HMMUnit(HMMMatch):
                     self.evalue,
                     1, #int(unit.sig), 
                     "" )
-
+        return outStr
