@@ -134,7 +134,11 @@ db   : Database name.  By default Pfam-A.hmm.
 
         tmpPath = "/tmp/%s.%d.%f" % ( "pfamScanHmmer", os.getpid(), random.random() ) 
         tmpFile = open( tmpPath, "w" )
-        tmpFile.write( get_fasta(seq.id, seq.seq) )
+        if isinstance( seq, list ):
+            for s in seq:
+                tmpFile.write( get_fasta(s.id, s.seq) )
+        else:
+            tmpFile.write( get_fasta(seq.id, seq.seq) )
         tmpFile.close()
         dbPath = "%s/Pfam-A.hmm" % (self._dir)
         
@@ -143,7 +147,7 @@ db   : Database name.  By default Pfam-A.hmm.
         except OSError:
             raise OSError( "Unable to find hmmscan" )
         self.hmmParser = HMMER.HMMResultsIO()
-        results = [ self.hmmParser.parseHMMER3( pipe ) ]
+        results = [ self.hmmParser.parseMultiHMMER3( pipe ) ]
         self.prepResults( results )
         pipe.close()
         try:
