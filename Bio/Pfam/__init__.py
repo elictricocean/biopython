@@ -21,15 +21,14 @@ def parseStockholmInfo( handle, **kwargs ):
     out = {}
     curSet = {}
     for line in handle:
-        res = reGF.search( line )
-        if res:
+        if line.startswith( "#=GF " ):
+            res = reGF.search( line )
             [type, data] = res.groups()
             try:
                 curSet[ type ].append( data )
             except KeyError:
                 curSet[ type ] = [ data ]
-        res = reEnd.search( line )
-        if res:
+        elif line.startswith('//'):
             yield StockholmEntry( curSet )
             curSet = {}
 
