@@ -147,16 +147,17 @@ db   : Database name.  By default Pfam-A.hmm.
         except OSError:
             raise OSError( "Unable to find hmmscan" )
         self.hmmParser = HMMER.HMMResultsIO()
-        results = [ self.hmmParser.parseMultiHMMER3( pipe ) ]
-        self.prepResults( results )
+        results = self.hmmParser.parseMultiHMMER3( pipe )
+        out = self.prepResults( results )
         pipe.close()
         try:
             os.unlink( tmpPath )        
         except OSError:
             pass
-        return results
+        return out
 
     def prepResults(self, results):
+        out = []
         for res in results:
             for unit in res:
                 unit.acc = self._accmap[ unit.name ]
@@ -165,6 +166,8 @@ db   : Database name.  By default Pfam-A.hmm.
                 if ( float(res.seqs[ unit.name ].bits) >= float(self._seqGA[ unit.name ]) ):
                     if ( float(unit.bits) >= float(self._domGA[ unit.name ]) ):
                         unit.sig = True
+            out.append(res)
+        return out
 
     def setResults(self, results):
         self.hmmParser = HMMER.HMMResultsIO()
