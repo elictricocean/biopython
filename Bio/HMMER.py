@@ -229,11 +229,11 @@ class HMMResults:
             else:
                 raise NameError( "arg %s not recognized" % (a) )
 
-    #def __str__(self):
-    #    out = []
-    #    for a in self.units:
-    #        out.append( str( a ) )
-    #    return "\n".join( out )
+    def __str__(self):
+        out = []
+        for a in self.units:
+            out.append( str( a ) )
+        return "\n".join( out )
 
     def __iter__(self):
         self.curUnit = 0
@@ -837,7 +837,7 @@ class HMMUnit(HMMMatch):
                 raise TypeError( "__init__() got an unexpected keyword argument '%s'" % (a) )
                 
     def __str__(self):
-        outStr = "%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %8e %9e %3d %-8s " % (
+        outStr = "%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %f %e %3d %-8s " % (
                     self.seqName,
                     int(self.seqFrom),
                     int(self.seqTo),

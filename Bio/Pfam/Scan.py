@@ -89,7 +89,7 @@ class PfamScan:
     re_stockend  = re.compile(r'^//')
     re_ga = re.compile(r'^([^\s]*);')
 
-    def __init__(self, dir=None, db="Pfam-A.hmm", file=None):
+    def __init__(self, dir=None, db="Pfam-A.hmm", file=None, options=[]):
         """
 Setup Pfam Scan Parser
 dir  : Name of directory where Pfam related files are kept
@@ -103,6 +103,7 @@ db   : Database name.  By default Pfam-A.hmm.
         self._as = False        
         self._read_ = {}
         self.comment = True
+        self.options = options
         for ext in [ "h3f", "h3i", "h3m", "h3p", "dat" ]:
             extPath = os.path.join( self._dir, "%s.%s" % (db, ext) )
             if ( not os.path.exists( extPath ) ) :
@@ -143,7 +144,11 @@ db   : Database name.  By default Pfam-A.hmm.
         dbPath = "%s/Pfam-A.hmm" % (self._dir)
         
         try:
-            pipe = subprocess.Popen( ["hmmscan", "--notextw", dbPath, tmpPath] , stdout=subprocess.PIPE).stdout
+            cmdArray = ["hmmscan", "--notextw" ]
+            if self.options:
+                cmdArray.extend( self.options )
+            cmdArray.extend( [ dbPath, tmpPath] )
+            pipe = subprocess.Popen( cmdArray, stdout=subprocess.PIPE).stdout
         except OSError:
             raise OSError( "Unable to find hmmscan" )
         self.hmmParser = HMMER.HMMResultsIO()
@@ -208,6 +213,7 @@ db   : Database name.  By default Pfam-A.hmm.
         except KeyError:
             return "No_clan"
 
+    """
     def __str__(self):
         self.calcSignificant()
         out = []
@@ -222,7 +228,8 @@ db   : Database name.  By default Pfam-A.hmm.
             if len( outStr ):
                 out.append( outStr )
         return "%s" % ( "\n".join(out) )
-        
+    """
+     
     def removeClanDup(self):
         self.loadPfam()
         newresults = []
