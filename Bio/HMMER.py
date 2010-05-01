@@ -133,8 +133,7 @@ db   : Path to HMMER database
         elif isinstance(seqIn, str):
             scanSet = [ Bio.SeqRecord( Bio.Seq.Seq(seqIn), id="query" ) ]
         elif isinstance(seqIn, Bio.Seq.Seq):
-            scanSet = [ Bio.SeqRecord( seqIn, id="query" ) ]
-            
+            scanSet = [ Bio.SeqRecord( seqIn, id="query" ) ]            
         else:
             scanSet = seqIn    
             
@@ -837,7 +836,7 @@ class HMMUnit(HMMMatch):
                 raise TypeError( "__init__() got an unexpected keyword argument '%s'" % (a) )
                 
     def __str__(self):
-        outStr = "%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %f %e %3d %-8s " % (
+        outStr = "%s %6d %6d %6d %6d %-10s %-16s %7s %5d %5d %5d %8.1f %10.3e %3d %-8s " % (
                     self.seqName,
                     int(self.seqFrom),
                     int(self.seqTo),

@@ -31,21 +31,16 @@ The PATH must contain 'hmmscan' in order to work
 
 Module Usage:
 
->>> import Bio.Pfam.Scan.PfamScan
->>> ps = Bio.Pfam.Scan.PfamScan(dir=baseDir, file=fastaFile)
->>> ps.search()
->>> print ps
-
-Or:
-
 >>> ps = Bio.Pfam.Scan.PfamScan(dir=sys.argv[2])
 >>> ps.setComment( False )
 >>> handle = open( sys.argv[1] )
 >>> seqDB = Bio.SeqIO.parse( handle, "fasta" )
 >>> for seq in seqDB:
->>>     ps.scan(seq)
->>>     outStr = str(ps)
->>>     print outStr
+>>>     results = ps.scan(seq)
+>>>     for res in results:
+>>>         outStr = str(res)
+>>>         if outStr:
+>>>             print outStr
 
 Or:
 
@@ -114,16 +109,6 @@ db   : Database name.  By default Pfam-A.hmm.
     def setComment(self, comment):
         self.comment = comment
 
-    def search(self, file=None):
-        if file is None:
-            handle = open(self.file)
-        else:
-            handle = open(file)            
-        seqdb = Bio.SeqIO.parse(handle, "fasta")
-        for seq in seqdb:
-            self.scan(seq)
-        handle.close()
-
     def reset(self):
         self.results = None
 
@@ -152,48 +137,23 @@ db   : Database name.  By default Pfam-A.hmm.
         except OSError:
             raise OSError( "Unable to find hmmscan" )
         self.hmmParser = HMMER.HMMResultsIO()
+        self.loadPfam()
+
         results = self.hmmParser.parseMultiHMMER3( pipe )
-        out = self.prepResults( results )
+        for result in results:
+            for unit in result:
+                unit.acc = self._accmap[ unit.name ]
+                unit.type = self._type[ unit.name ]
+                unit.sig = False
+                if ( float(result.seqs[ unit.name ].bits) >= float(self._seqGA[ unit.name ]) ):
+                    if ( float(unit.bits) >= float(self._domGA[ unit.name ]) ):
+                        unit.sig = True
+            yield result        
         pipe.close()
         try:
             os.unlink( tmpPath )        
         except OSError:
             pass
-        return out
-
-    def prepResults(self, results):
-        out = []
-        for res in results:
-            for unit in res:
-                unit.acc = self._accmap[ unit.name ]
-                unit.type = self._type[ unit.name ]
-                unit.sig = False
-                if ( float(res.seqs[ unit.name ].bits) >= float(self._seqGA[ unit.name ]) ):
-                    if ( float(unit.bits) >= float(self._domGA[ unit.name ]) ):
-                        unit.sig = True
-            out.append(res)
-        return out
-
-    def setResults(self, results):
-        self.hmmParser = HMMER.HMMResultsIO()
-        if not isinstance( results, list ):
-            self.results = [ results ]
-        else:
-            self.results = results
-        self.prepResults( self.results )
-        
-
-    def calcSig(self):
-        self.calcSignificant()
-    
-    def calcSignificant(self):
-        self.loadPfam()
-        for result in self.results:
-            for unit in result.units:
-                unit.sig = False
-                if ( float(result.seqs[ unit.name ].bits) >= float(self._seqGA[ unit.name ]) ):
-                    if ( float(unit.bits) >= float(self._domGA[ unit.name ]) ):
-                        unit.sig = True
 
     def unitAcc(self, unit):
         self.loadPfam()
