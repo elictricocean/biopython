@@ -167,7 +167,9 @@ class InsdcScanner:
                 line = self.handle.readline()
                 while line[:self.FEATURE_QUALIFIER_INDENT] == self.FEATURE_QUALIFIER_SPACER \
                 or line.rstrip() == "" : # cope with blank lines in the midst of a feature
-                    feature_lines.append(line[self.FEATURE_QUALIFIER_INDENT:].rstrip())
+                    #Use strip to remove any harmless trailing white space AND and leading
+                    #white space (e.g. out of spec files with too much intentation)
+                    feature_lines.append(line[self.FEATURE_QUALIFIER_INDENT:].strip())
                     line = self.handle.readline()
                 features.append(self.parse_feature(feature_key, feature_lines))
         self.line = line
@@ -779,9 +781,7 @@ class GenBankScanner(InsdcScanner):
         while self.line[:self.HEADER_WIDTH].rstrip() in self.SEQUENCE_HEADERS \
         or self.line[:self.HEADER_WIDTH] == " "*self.HEADER_WIDTH \
         or "WGS" == self.line[:3]:
-#            if self.line[-1] == "\n" : self.line = self.line[:-1]
-            self.line = self.line.rstrip(os.linesep)
-            misc_lines.append(self.line)
+            misc_lines.append(self.line.rstrip())
             self.line = self.handle.readline()
             if not self.line:
                 raise ValueError("Premature end of file")

@@ -8,6 +8,11 @@ dist
 *~
 *.swp
 
+#Ignore patches and any original files created by patch command
+*.diff
+*.patch
+*.orig
+
 #Ignore these hidden files from Mac OS X
 .DS_Store
 
@@ -38,16 +43,23 @@ Doc/*.aux
 Doc/*.log
 Doc/*.out
 Doc/*.toc
+Doc/*.haux
+Doc/*.htoc
 Doc/*/*.aux
 Doc/*/*.log
 Doc/*/*.out
 Doc/*/*.toc
+Doc/*/*.haux
+Doc/*/*.htoc
 Doc/*/*/*.aux
 Doc/*/*/*.log
 Doc/*/*/*.out
 Doc/*/*/*.toc
+Doc/*/*/*.haux
+Doc/*/*/*.htoc
 Doc/Tutorial.pdf
 Doc/Tutorial.html
+Doc/install/Installation.txt
 Doc/install/Installation.pdf
 Doc/install/Installation.html
 Doc/cookbook/motif/motif.pdf
