@@ -172,26 +172,27 @@ class TreeElement(object):
 
     def __repr__(self):
         """Show this object's constructor with its primitive arguments."""
+        def pair_as_kwarg_string(key, val):
+            if isinstance(val, basestring):
+                return "%s='%s'" % (key, _sugar.trim_str(unicode(val)))
+            return "%s=%s" % (key, val)
         s = '%s(%s)' % (self.__class__.__name__,
-                        ', '.join("%s='%s'"
-                                  % (key, _sugar.trim_str(unicode(val)))
-                            for key, val in self.__dict__.iteritems()
-                            if val is not None and
-                            type(val) in (str, int, float, bool, unicode)))
+                        ', '.join(pair_as_kwarg_string(key, val)
+                                  for key, val in self.__dict__.iteritems()
+                                  if val is not None and
+                                  type(val) in (str, int, float, bool, unicode)
+                                  ))
         return s.encode('utf-8')
 
-    def __str__(self):
-        if hasattr(self, 'name') and self.name:
-            return self.name
-        return self.__class__.__name__
+    __str__ = __repr__
 
 
 class TreeMixin(object):
-    """Methods for Tree- and Subtree-based classes.
+    """Methods for Tree- and Clade-based classes.
 
-    This lets Tree and Subtree support the same traversal and searching
-    operations without requiring Subtree to inherit from Tree, so Subtree isn't
-    required to have all of Tree's attributes -- just 'root' (a Subtree
+    This lets Tree and Clade support the same traversal and searching
+    operations without requiring Clade to inherit from Tree, so Clade isn't
+    required to have all of Tree's attributes -- just 'root' (a Clade
     instance) and 'is_terminal()'.
     """
     # Traversal methods
@@ -350,12 +351,13 @@ class TreeMixin(object):
 
             - If no target is given, returns self.root
             - If 1 target is given, returns the target
-            - If any target is not found in this tree, raises an AssertionError
+            - If any target is not found in this tree, raises a ValueError
         """
         paths = [self.get_path(t) for t in targets]
         # Validation -- otherwise izip throws a spooky error below
         for p, t in zip(paths, targets):
-            assert p is not None, "target %s is not in this tree" % repr(t)
+            if p is None:
+                raise ValueError("target %s is not in this tree" % repr(t))
         mrca = self.root
         for level in itertools.izip(*paths):
             ref = level[0]
@@ -574,7 +576,7 @@ class Tree(TreeElement, TreeMixin):
     @param root:
         The starting node of the tree. If the tree is rooted, this will usually
         be the root node.
-    @type root: Subtree
+    @type root: Clade
 
     @param rooted:
         Whether or not the tree is rooted. By default, a tree is assumed to be
@@ -588,7 +590,7 @@ class Tree(TreeElement, TreeMixin):
     @type name: str
     """
     def __init__(self, root=None, rooted=True, id=None, name=None):
-        self.root = root or Subtree()
+        self.root = root or Clade()
         self.rooted = rooted
         self.id = id
         self.name = name
@@ -702,7 +704,7 @@ class Tree(TreeElement, TreeMixin):
         return '\n'.join(textlines)
 
 
-class Subtree(TreeElement, TreeMixin):
+class Clade(TreeElement, TreeMixin):
     """A recursively defined subtree.
 
     @param branch_length:
@@ -748,3 +750,16 @@ class Subtree(TreeElement, TreeMixin):
         """Number of subtrees directy under the root."""
         return len(self.clades)
 
+    def __nonzero__(self):
+        """Boolean value of an instance of this class.
+
+        NB: If this method is not defined, but __len__  is, then the object is
+        considered true if the result of __len__() is nonzero. We want Clade
+        instances to always be considered true.
+        """
+        return True
+
+    def __str__(self):
+        if self.name:
+            return _sugar.trim_str(self.name, maxlen=40)
+        return self.__class__.__name__

@@ -162,8 +162,18 @@ class InsdcScanner:
                     line = self.handle.readline()
             else:
                 #Build up a list of the lines making up this feature:
-                feature_key = line[2:self.FEATURE_QUALIFIER_INDENT].strip()
-                feature_lines = [line[self.FEATURE_QUALIFIER_INDENT:]]
+                if line[self.FEATURE_QUALIFIER_INDENT]!=" " \
+                and " " in line[self.FEATURE_QUALIFIER_INDENT:]:
+                    #The feature table design enforces a length limit on the feature keys.
+                    #Some third party files (e.g. IGMT's EMBL like files) solve this by
+                    #over indenting the location and qualifiers.
+                    feature_key, line = line[2:].strip().split(None,1)
+                    feature_lines = [line]
+                    import warnings
+                    warnings.warn("Overindented %s feature?" % feature_key)
+                else:
+                    feature_key = line[2:self.FEATURE_QUALIFIER_INDENT].strip()
+                    feature_lines = [line[self.FEATURE_QUALIFIER_INDENT:]]
                 line = self.handle.readline()
                 while line[:self.FEATURE_QUALIFIER_INDENT] == self.FEATURE_QUALIFIER_SPACER \
                 or line.rstrip() == "" : # cope with blank lines in the midst of a feature
@@ -648,7 +658,7 @@ class EmblScanner(InsdcScanner):
             'RL' : 'journal',
             'OS' : 'organism',
             'OC' : 'taxonomy',
-            #'DR' : data reference?
+            #'DR' : data reference
             'CC' : 'comment',
             #'XX' : splitter
         }
@@ -676,8 +686,9 @@ class EmblScanner(InsdcScanner):
                 elif line_type == 'RP':
                     # Reformat reference numbers for the GenBank based consumer
                     # e.g. '1-4639675' becomes '(bases 1 to 4639675)'
-                    assert data.count("-")==1
-                    consumer.reference_bases("(bases " + data.replace("-", " to ") + ")")
+                    # and '160-550, 904-1055' becomes '(bases 160 to 550; 904 to 1055)'
+                    parts = [bases.replace("-"," to ").strip() for bases in data.split(",")]
+                    consumer.reference_bases("(bases %s)" % "; ".join(parts))
                 elif line_type == 'RT':
                     #Remove the enclosing quotes and trailing semi colon.
                     #Note the title can be split over multiple lines.
@@ -718,9 +729,12 @@ class EmblScanner(InsdcScanner):
                     # e.g.
                     # DR   MGI; 98599; Tcrb-V4.
                     #
-                    # TODO - Data reference...
-                    # How should we store the secondary identifier (if present)?  Ignore it?
-                    pass
+                    # TODO - How should we store any secondary identifier?
+                    parts = data.rstrip(".").split(";")
+                    #Turn it into "database_identifier:primary_identifier" to
+                    #mimic the GenBank parser. e.g. "MGI:98599"
+                    consumer.dblink("%s:%s" % (parts[0].strip(),
+                                               parts[1].strip()))
                 elif line_type == 'RA':
                     # Remove trailing ; at end of authors list
                     consumer.authors(data.rstrip(";"))
