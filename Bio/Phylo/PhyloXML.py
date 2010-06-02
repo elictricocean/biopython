@@ -15,13 +15,13 @@ import re
 import warnings
 
 from Bio import Alphabet
-from Bio.Align.Generic import Alignment
+from Bio.Align import MultipleSeqAlignment
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqRecord import SeqRecord
 
 import BaseTree
-from BaseTree import trim_str
+import _sugar
 
 
 class PhyloXMLWarning(Warning):
@@ -29,7 +29,7 @@ class PhyloXMLWarning(Warning):
     pass
 
 
-def check_str(text, testfunc):
+def _check_str(text, testfunc):
     """Check a string using testfunc, and warn if there's no match."""
     if text is not None and not testfunc(text):
         warnings.warn("String %s doesn't match the given regexp" % text,
@@ -40,15 +40,6 @@ def check_str(text, testfunc):
 
 class PhyloElement(BaseTree.TreeElement):
     """Base class for all PhyloXML objects."""
-    def __str__(self):
-        """Show the class name and an identifying attribute."""
-        if hasattr(self, 'name') and self.name:
-            return trim_str(self.name, maxlen=40)
-        if hasattr(self, 'value') and self.value:
-            return trim_str(unicode(self.value), maxlen=40)
-        if hasattr(self, 'id') and self.id:
-            return str(self.id)
-        return self.__class__.__name__
 
 
 class Phyloxml(PhyloElement):
@@ -86,6 +77,10 @@ class Phyloxml(PhyloElement):
         """Number of phylogenetic trees in this object."""
         return len(self.phylogenies)
 
+    def __str__(self):
+        return '%s([%s])' % (self.__class__.__name__,
+                             ',\n'.join(map(str, self.phylogenies)))
+
 
 class Other(PhyloElement):
     """Container for non-phyloXML elements in the tree.
@@ -116,6 +111,7 @@ class Other(PhyloElement):
 class Phylogeny(PhyloElement, BaseTree.Tree):
     """A phylogenetic tree.
 
+    @param root: the root node/clade of this tree
     @param rooted: True if this tree is rooted
     @param rerootable: True if this tree is rerootable
     @param branch_length_unit: unit for branch_length values on clades
@@ -126,7 +122,6 @@ class Phylogeny(PhyloElement, BaseTree.Tree):
     @param description: plain-text description
     @param date: date for the root node of this tree (type Date)
     @param confidences: list of Confidence objects for this tree
-    @param clade: the root node/clade of this tree
     @param clade_relations: list of CladeRelation objects
     @param sequence_relations: list of SequenceRelation objects
     @param properties: list of Property objects
@@ -157,8 +152,8 @@ class Phylogeny(PhyloElement, BaseTree.Tree):
         self.other = other or []
 
     @classmethod
-    def from_tree(self, tree, **kwargs):
-        phy = Phylogeny(
+    def from_tree(cls, tree, **kwargs):
+        phy = cls(
                 root=Clade.from_subtree(tree.root),
                 rooted=tree.rooted,
                 name=tree.name,
@@ -166,54 +161,69 @@ class Phylogeny(PhyloElement, BaseTree.Tree):
         phy.__dict__.update(kwargs)
         return phy
 
-    def from_subtree(self, subtree, **kwargs):
+    @classmethod
+    def from_subtree(cls, subtree, **kwargs):
         return Clade.from_subtree(subtree).to_phylogeny(**kwargs)
 
     def to_phyloxml(self, **kwargs):
         """Create a new PhyloXML object containing just this phylogeny."""
         return Phyloxml(kwargs, phylogenies=[self])
 
-    def get_alignment(self):
+    def to_alignment(self):
         """Construct an alignment from the aligned sequences in this tree."""
-        def is_aligned_seq(node):
-            if isinstance(node, Sequence) and node.mol_seq.is_aligned:
+        def is_aligned_seq(elem):
+            if isinstance(elem, Sequence) and elem.mol_seq.is_aligned:
                 return True
             return False
         seqs = self._filter_search(is_aligned_seq, 'preorder', True)
         try:
             first_seq = seqs.next()
         except StopIteration:
-            # No aligned sequences were found
-            # Can't construct an Alignment without an alphabet, so... nothin'
-            return
-        aln = Alignment(first_seq.get_alphabet())
-        aln.add_sequence(str(first_seq), first_seq.mol_seq.value)
-        for seq in seqs:
-            aln.add_sequence(str(seq), seq.mol_seq.value)
-        return aln
+            # No aligned sequences were found --> empty MSA
+            return MultipleSeqAlignment([])
+        msa = MultipleSeqAlignment([first_seq.to_seqrecord()],
+                                   first_seq.get_alphabet())
+        msa.extend(seq.to_seqrecord() for seq in seqs)
+        return msa
 
     # Singular property for plural attribute
-    @property
-    def confidence(self):
+    def _get_confidence(self):
         """Equivalent to self.confidences[0] if there is only 1 value.
 
         See also: Clade.confidence, Clade.taxonomy
         """
         if len(self.confidences) == 0:
-            raise AttributeError("Phylogeny().confidences is empty")
+            return None
         if len(self.confidences) > 1:
-            raise ValueError("more than 1 confidence value available; "
-                               "use Phylogeny().confidences")
+            raise AttributeError("more than 1 confidence value available; "
+                                 "use Phylogeny.confidences")
         return self.confidences[0]
 
+    def _set_confidence(self, value):
+        if isinstance(value, float) or isinstance(value, int):
+            value = Confidence(value)
+        elif not isinstance(value, Confidence):
+            raise ValueError("value must be a number or Confidence instance")
+        if len(self.confidences) == 0:
+            self.confidences.append(value)
+        elif len(self.confidences) == 1:
+            self.confidences[0] = value
+        else:
+            raise ValueError("multiple confidence values already exist; "
+                             "use Phylogeny.confidences instead")
 
-class Clade(PhyloElement, BaseTree.Subtree):
+    confidence = property(_get_confidence, _set_confidence)
+
+
+class Clade(PhyloElement, BaseTree.Clade):
     """Describes a branch of the current phylogenetic tree.
 
     Used recursively, describes the topology of a phylogenetic tree.
 
-    Both 'color' and 'width' elements apply for the whole clade unless
-    overwritten in-sub clades.
+    Both 'color' and 'width' elements should be interpreted by client code as
+    applying to the whole clade, including all descendents, unless overwritten
+    in-sub clades. This module doesn't automatically assign these attributes to
+    sub-clades to achieve this cascade -- and neither should you.
 
     @param branch_length: parent branch length of this clade
     @param id_source: link other elements to a clade (on the xml-level)
@@ -221,7 +231,7 @@ class Clade(PhyloElement, BaseTree.Subtree):
     @param name: short string label for this clade
     @param confidences: list of Confidence objects, used to indicate the
         support for a clade/parent branch.
-    @param width: branch width for this clade (including parent branch)
+    @param width: branch width for this clade (including branch from parent)
     @param color: color used for graphical display of this clade
     @param node_id: unique identifier for the root node of this clade
     @param taxonomies: list of Taxonomy objects
@@ -267,7 +277,7 @@ class Clade(PhyloElement, BaseTree.Subtree):
 
     @classmethod
     def from_subtree(cls, subtree, **kwargs):
-        """Create a new Clade from a BaseTree.Subtree object."""
+        """Create a new Clade from a BaseTree.Clade object."""
         clade = cls(branch_length=subtree.branch_length,
                     name=subtree.name)
         clade.clades = [cls.from_subtree(st) for st in subtree.clades]
@@ -280,29 +290,74 @@ class Clade(PhyloElement, BaseTree.Subtree):
         phy.__dict__.update(kwargs)
         return phy
 
-    # Potential addition to BaseTree.Subtree
-    # @property
-    # def id(self):
-    #     return self.node_id.value
-
     # Shortcuts for list attributes that are usually only 1 item
-    @property
-    def confidence(self):
+    def _get_confidence(self):
         if len(self.confidences) == 0:
-            raise AttributeError("Clade().confidences is empty")
+            return None
         if len(self.confidences) > 1:
-            raise ValueError("more than 1 confidence value available; "
-                               "use Clade().confidences")
+            raise AttributeError("more than 1 confidence value available; "
+                                 "use Clade.confidences")
         return self.confidences[0]
 
-    @property
-    def taxonomy(self):
+    def _set_confidence(self, value):
+        if isinstance(value, float) or isinstance(value, int):
+            value = Confidence(value)
+        elif not isinstance(value, Confidence):
+            raise ValueError("value must be a number or Confidence instance")
+        if len(self.confidences) == 0:
+            self.confidences.append(value)
+        elif len(self.confidences) == 1:
+            self.confidences[0] = value
+        else:
+            raise ValueError("multiple confidence values already exist; "
+                             "use Phylogeny.confidences instead")
+
+    confidence = property(_get_confidence, _set_confidence)
+
+    def _get_taxonomy(self):
         if len(self.taxonomies) == 0:
-            raise AttributeError("Clade().taxonomies is empty")
+            return None
         if len(self.taxonomies) > 1:
-            raise ValueError("more than 1 taxonomy value available; "
-                               "use Clade().taxonomies")
+            raise AttributeError("more than 1 taxonomy value available; "
+                                 "use Clade.taxonomies")
         return self.taxonomies[0]
+
+    def _set_taxonomy(self, value):
+        if not isinstance(value, Taxonomy):
+            raise ValueError("assigned value must be a Taxonomy instance")
+        if len(self.taxonomies) == 0:
+            self.taxonomies.append(value)
+        elif len(self.taxonomies) == 1:
+            self.taxonomies[0] = value
+        else:
+            raise ValueError("multiple taxonomy values already exist; "
+                             "use Phylogeny.taxonomies instead")
+
+    taxonomy = property(_get_taxonomy, _set_taxonomy)
+
+    # Syntax sugar for setting the branch color
+    def _get_color(self):
+        return self._color
+
+    def _set_color(self, arg):
+        if arg is None or isinstance(arg, BranchColor):
+            self._color = arg
+        elif isinstance(arg, basestring):
+            if arg in BranchColor.color_names:
+                # Known color name
+                self._color = BranchColor.from_name(arg)
+            elif arg.startswith('#') and len(arg) == 7:
+                # HTML-style hex string
+                self._color = BranchColor.from_hex(arg)
+            else:
+                raise ValueError("invalid color string %s" % arg)
+        elif hasattr(arg, '__iter__') and len(arg) == 3:
+            # RGB triplet
+            self._color = BranchColor(*arg)
+        else:
+            raise ValueError("invalid color value %s" % arg)
+
+    color = property(_get_color, _set_color, doc="Branch color.")
 
 
 # PhyloXML-specific complex types
@@ -310,12 +365,16 @@ class Clade(PhyloElement, BaseTree.Subtree):
 class Accession(PhyloElement):
     """Captures the local part in a sequence identifier.
 
-    Example: In 'UniProtKB:P17304', the value of Accession is 'P17304'  and the
-    'source' attribute is 'UniProtKB'.
+    Example: In 'UniProtKB:P17304', the Accession instance attribute 'value' is
+    'P17304' and the 'source' attribute is 'UniProtKB'.
     """
     def __init__(self, value, source):
         self.value = value
         self.source = source
+
+    def __str__(self):
+        """Show the class name and an identifying attribute."""
+        return '%s:%s' % (self.source, self.value)
 
 
 class Annotation(PhyloElement):
@@ -345,7 +404,7 @@ class Annotation(PhyloElement):
             desc=None, confidence=None, uri=None,
             # Collection
             properties=None):
-        check_str(ref, self.re_ref.match)
+        _check_str(ref, self.re_ref.match)
         self.ref = ref
         self.source = source
         self.evidence = evidence
@@ -380,10 +439,11 @@ class BinaryCharacters(PhyloElement):
 class BranchColor(PhyloElement):
     """Indicates the color of a clade when rendered graphically.
 
-    The color applies to the whole clade unless overwritten by the color(s) of
-    sub-clades.
+    The color should be interpreted by client code (e.g. visualization
+    programs) as applying to the whole clade, unless overwritten by the
+    color(s) of sub-clades.
 
-    Color values should be unsigned bytes, or integers from 0 to 255.
+    Color values must be integers from 0 to 255.
     """
 
     color_names = {
@@ -426,13 +486,29 @@ class BranchColor(PhyloElement):
             }
 
     def __init__(self, red, green, blue):
-        assert (isinstance(red, int)
-                and isinstance(green, int)
-                and isinstance(blue, int)
-                ), "Color values must be integers between 0 and 255."
+        for color in (red, green, blue):
+            assert (isinstance(color, int) and
+                    0 <= color <= 255
+                    ), "Color values must be integers between 0 and 255."
         self.red = red
         self.green = green
         self.blue = blue
+
+    @classmethod
+    def from_hex(cls, hexstr):
+        """Construct a BranchColor object from a hexadecimal string.
+
+        The string format is the same style used in HTML and CSS, such as
+        '#FF8000' for an RGB value of (255, 128, 0).
+        """
+        assert (isinstance(hexstr, basestring) and
+                hexstr.startswith('#') and
+                len(hexstr) == 7
+                ), "need a 24-bit hexadecimal string, e.g. #000000"
+        def unpack(cc):
+            return int('0x'+cc, base=16)
+        RGB = hexstr[1:3], hexstr[3:5], hexstr[5:]
+        return cls(*map(unpack, RGB))
 
     @classmethod
     def from_name(cls, colorname):
@@ -457,15 +533,25 @@ class BranchColor(PhyloElement):
                 + self.blue)[2:].zfill(6)
 
     def to_rgb(self):
-        """Return a tuple of RGB values (0.0 to 1.0) representing this color.
+        """Return a tuple of RGB values (0 to 255) representing this color.
 
         Example:
 
             >>> bc = BranchColor(255, 165, 0)
             >>> bc.to_rgb()
-            (1.0, 0.6470588235294118, 0.0)
+            (255, 165, 0)
         """
-        return (self.red/255.0, self.green/255.0, self.blue/255.0)
+        return (self.red, self.green, self.blue)
+
+    def __repr__(self):
+        """Preserve the standard RGB order when representing this object."""
+        return ('%s(red=%d, green=%d, blue=%d)'
+                % (self.__class__.__name__, self.red, self.green, self.blue)
+                ).encode('utf-8')
+
+    def __str__(self):
+        """Show the color's RGB values."""
+        return "(%d, %d, %d)" % (self.red, self.green, self.blue)
 
 
 class CladeRelation(PhyloElement):
@@ -498,9 +584,15 @@ class Confidence(PhyloElement):
     @type value: float
     @type type: str
     """
-    def __init__(self, value, type):
+    def __init__(self, value, type='unknown'):
         self.value = value
         self.type = type
+
+    def __float__(self):
+        return float(self.value)
+
+    def __int__(self):
+        return int(self.value)
 
 
 class Date(PhyloElement):
@@ -572,7 +664,7 @@ class Events(PhyloElement):
 
     def __init__(self, type=None, duplications=None, speciations=None,
             losses=None, confidence=None):
-        check_str(type, self.ok_type.__contains__)
+        _check_str(type, self.ok_type.__contains__)
         self.type = type
         self.duplications = duplications
         self.speciations = speciations
@@ -631,6 +723,11 @@ class Id(PhyloElement):
         self.value = value
         self.provider = provider
 
+    def __str__(self):
+        if self.provider is not None:
+            return '%s:%s' % (self.provider, self.value)
+        return self.value
+
 
 class MolSeq(PhyloElement):
     """Store a molecular sequence.
@@ -642,7 +739,7 @@ class MolSeq(PhyloElement):
     re_value = re.compile(r'[a-zA-Z\.\-\?\*_]+')
 
     def __init__(self, value, is_aligned=None):
-        check_str(value, self.re_value.match)
+        _check_str(value, self.re_value.match)
         self.value = value
         self.is_aligned = is_aligned
 
@@ -677,6 +774,10 @@ class Polygon(PhyloElement):
     """
     def __init__(self, points=None):
         self.points = points or []
+
+    def __str__(self):
+        return '%s([%s])' % (self.__class__.__name__,
+                             ',\n'.join(map(str, self.points)))
 
 
 class Property(PhyloElement):
@@ -716,10 +817,10 @@ class Property(PhyloElement):
 
     def __init__(self, value, ref, applies_to, datatype,
             unit=None, id_ref=None):
-        check_str(ref, self.re_ref.match)
-        check_str(applies_to, self.ok_applies_to.__contains__)
-        check_str(datatype, self.ok_datatype.__contains__)
-        check_str(unit, self.re_ref.match)
+        _check_str(ref, self.re_ref.match)
+        _check_str(applies_to, self.ok_applies_to.__contains__)
+        _check_str(datatype, self.ok_datatype.__contains__)
+        _check_str(unit, self.re_ref.match)
         self.unit = unit
         self.id_ref = id_ref
         self.value = value
@@ -775,7 +876,7 @@ class Reference(PhyloElement):
     re_doi = re.compile(r'[a-zA-Z0-9_\.]+/[a-zA-Z0-9_\.]+')
 
     def __init__(self, doi=None, desc=None):
-        check_str(doi, self.re_doi.match)
+        _check_str(doi, self.re_doi.match)
         self.doi = doi
         self.desc = desc
 
@@ -816,8 +917,8 @@ class Sequence(PhyloElement):
             # Collections
             annotations=None, other=None,
             ):
-        check_str(type, self.alphabets.__contains__)
-        check_str(symbol, self.re_symbol.match)
+        _check_str(type, self.alphabets.__contains__)
+        _check_str(symbol, self.re_symbol.match)
         self.type = type
         self.id_ref = id_ref
         self.id_source = id_source
@@ -981,7 +1082,7 @@ class SequenceRelation(PhyloElement):
 
     def __init__(self, type, id_ref_0, id_ref_1,
             distance=None, confidence=None):
-        check_str(type, self.ok_type.__contains__)
+        _check_str(type, self.ok_type.__contains__)
         self.distance = distance
         self.type = type
         self.id_ref_0 = id_ref_0
@@ -1029,8 +1130,8 @@ class Taxonomy(PhyloElement):
             # Collections
             common_names=None, synonyms=None, other=None,
             ):
-        check_str(code, self.re_code.match)
-        check_str(rank, self.ok_rank.__contains__)
+        _check_str(code, self.re_code.match)
+        _check_str(rank, self.ok_rank.__contains__)
         self.id_source = id_source
         self.id = id
         self.code = code
@@ -1067,3 +1168,7 @@ class Uri(PhyloElement):
         self.desc = desc
         self.type = type
 
+    def __str__(self):
+        if self.value:
+            return self.value
+        return repr(self)

@@ -6,10 +6,13 @@
 """Additional unit tests for Bio.SeqIO.convert(...) function."""
 import os
 import unittest
+from StringIO import StringIO
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio.SeqIO._index import _FormatToIndexedDict
 from Bio.Alphabet import generic_protein, generic_nucleotide, generic_dna
+
+from seq_tests_common import compare_record
 
 class IndexDictTests(unittest.TestCase):
     """Cunning unit test where methods are added at run time."""
@@ -33,7 +36,7 @@ class IndexDictTests(unittest.TestCase):
         #Check non-existant keys,
         try:
             rec = rec_dict[chr(0)]
-            raise ValueError("Accessing a non-existant key should fail")
+            raise ValueError("Accessing a non-existent key should fail")
         except KeyError:
             pass
         self.assertEqual(rec_dict.get(chr(0)), None)
@@ -53,6 +56,37 @@ class IndexDictTests(unittest.TestCase):
         self.assertRaises(NotImplementedError, rec_dict.copy)
         self.assertRaises(NotImplementedError, rec_dict.fromkeys, [])
         #Done
+
+    def get_raw_check(self, filename, format, alphabet):
+        if format in SeqIO._BinaryFormats:
+            #This means SFF at the moment, which does not get
+            #implement the get_raw method
+            return
+        handle = open(filename, "rU")
+        raw_file = handle.read()
+        handle.close()
+        #Also checking the key_function here
+        id_list = [rec.id.lower() for rec in \
+                   SeqIO.parse(filename, format, alphabet)]
+        rec_dict = SeqIO.index(filename, format, alphabet,
+                               key_function = lambda x : x.lower())
+        self.assertEqual(set(id_list), set(rec_dict.keys()))
+        self.assertEqual(len(id_list), len(rec_dict))
+        for key in id_list:
+            self.assert_(key in rec_dict)
+            self.assertEqual(key, rec_dict[key].id.lower())
+            self.assertEqual(key, rec_dict.get(key).id.lower())
+            raw = rec_dict.get_raw(key)
+            self.assert_(raw.strip())
+            self.assert_(raw in raw_file)
+            if format in ["ig"]:
+               #These have a header structure and can't be parsed
+               #individually (at least, not right now).
+               continue
+            rec1 = rec_dict[key]
+            rec2 = SeqIO.read(StringIO(raw), format, alphabet)
+	    self.assertEqual(True, compare_record(rec1, rec2))
+        #Done
             
 tests = [
     ("Ace/contig1.ace", "ace", generic_dna),
@@ -67,8 +101,10 @@ tests = [
     ("Quality/illumina_faked.fastq", "fastq-illumina", generic_dna),
     ("EMBL/U87107.embl", "embl", None),
     ("EMBL/TRBG361.embl", "embl", None),
+    ("EMBL/A04195.imgt", "embl", None), #Not a proper EMBL file, an IMGT file
     ("GenBank/NC_000932.faa", "fasta", generic_protein),
     ("GenBank/NC_005816.faa", "fasta", generic_protein),
+    ("GenBank/NC_005816.tsv", "tab", generic_protein),
     ("GenBank/NC_005816.ffn", "fasta", generic_dna),
     ("GenBank/NC_005816.fna", "fasta", generic_dna),
     ("GenBank/NC_005816.gb", "gb", None),
@@ -106,6 +142,18 @@ for filename, format, alphabet in tests:
         f.__doc__ = "Index %s file %s" % (fmt, fn)
         return f
     setattr(IndexDictTests, "test_%s_%s" \
+            % (filename.replace("/","_").replace(".","_"), format),
+            funct(filename, format, alphabet))
+    del funct
+
+    if format in SeqIO._BinaryFormats:
+        continue
+
+    def funct(fn,fmt,alpha):
+        f = lambda x : x.get_raw_check(fn, fmt, alpha)
+        f.__doc__ = "Index %s file %s get_raw" % (fmt, fn)
+        return f
+    setattr(IndexDictTests, "test_%s_%s_get_raw" \
             % (filename.replace("/","_").replace(".","_"), format),
             funct(filename, format, alphabet))
     del funct

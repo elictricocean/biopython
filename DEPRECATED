@@ -14,6 +14,7 @@ This means we will continue to support Python 2.4 for at least two further
 releases, and at least one year (whichever takes longer), before dropping
 support for Python 2.4. This can be delayed given feedback from our users
 (e.g. if this proves to be a problem in combination with other libraries).
+An explicit warning was added to setup.py for Biopython 1.55.
 
 Bio.Restriction.DNAUtils and check_bases
 ========================================
@@ -123,7 +124,8 @@ Bio.mathfns, Bio.stringfns and Bio.listfns (and their C code variants)
 ==========================================
 Declared obsolete in Release 1.49. Bio.mathfns and Bio.stringfns were
 deprecated in Release 1.50, Bio.listfns was deprecated in Release 1.53.
-The three C implementations were all removed in Release 1.53.
+The three C implementations were all removed in Release 1.53. Bio.mathfns
+and Bio.stringfns were removed in Release 1.55.
 
 Bio.distance (and Bio.cdistance)
 ================================
@@ -273,8 +275,9 @@ The modules under Bio.WWW were deprecated in Release 1.45, and removed in
 Release 1.48.  The remaining stub Bio.WWW was deprecated in Release 1.48,
 and removed in Release 1.53.
 
-The functionality in Bio.WWW.SCOP, Bio.WWW.InterPro and Bio.WWW.ExPASy
-is now available from Bio.SCOP, Bio.InterPro and Bio.ExPASy instead.
+The functionality in Bio.WWW.SCOP, Bio.WWW.InterPro, Bio.WWW.ExPASy and
+Bio.WWW.NCBI is now available from Bio.SCOP, Bio.InterPro, Bio.ExPASy and
+Bio.Entrez instead.
 
 Bio.SeqIO
 =========
@@ -383,9 +386,32 @@ CompareAceParser and CompareAceConsumer from Bio.Motif.Parsers.AlignAce were
 deprecated in Release 1.53. AlignAceConsumer, AlignAceParser, and
 AlignAceScanner were declared obsolete in Release 1.53; their functionality is
 now available through a read() function in Bio.Motif.Parsers.AlignAce.
+MEMEParser, _MEMEScanner, _MEMEConsumer, _MASTConsumer, MASTParser,
+_MASTScanner, and MASTRecord were declared obsolete in Release 1.54; their
+functionality is now available through a read() function in
+Bio.Motif.Parsers.MEME and Bio.Motif.Parsers.MAST, respectively.
 
 Bio.Compass
 ===========
 The RecordParser and Iterator classes were declared obsolete in Release 1.54.
 Their functionality is now available through a read() and a parse() function,
 respectively.
+
+Bio.Affy.CelFile
+================
+The CelScanner, CelConsumer, CelRecord, and CelParser were declared obsolete
+in Release 1.54. Their functionality is now available through a read()
+function.
+
+Bio.PopGen.FDist
+================
+The RecordParser, _Scanner, and _RecordConsumer classes were declared obsolete
+in Release 1.54. Their functionality is now available through a read() function.
+
+Bio.UniGene
+===========
+The classes UnigeneSequenceRecord, UnigeneProtsimRecord, UnigeneSTSRecord,
+UnigeneRecord, _RecordConsumer, _Scanner, RecordParser, and Iterator in
+Bio.UniGene were declared obsolete in Release 1.54. Their functionality is now
+available through a read() and a parse() function in Bio.UniGene.
+

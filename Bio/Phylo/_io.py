@@ -9,15 +9,27 @@ This API follows the same semantics as Biopython's SeqIO and AlignIO.
 """
 __docformat__ = "epytext en"
 
+import BaseTree
 import NewickIO
 import NexusIO
-import PhyloXMLIO
-
-supported_formats = {
-        'newick':   NewickIO,
-        'nexus':    NexusIO,
-        'phyloxml': PhyloXMLIO,
-        }
+# Python 2.4 doesn't have ElementTree, which PhyloXMLIO needs
+try:
+    import PhyloXMLIO
+except ImportError:
+    # TODO: should we issue a warning? the installer will have already whined
+    # raise MissingExternalDependencyError(
+    #         "Install an ElementTree implementation if you want to use "
+    #         "Bio.Phylo to parse phyloXML files.")
+    supported_formats = {
+            'newick':   NewickIO,
+            'nexus':    NexusIO,
+            }
+else:
+    supported_formats = {
+            'newick':   NewickIO,
+            'nexus':    NexusIO,
+            'phyloxml': PhyloXMLIO,
+            }
 
 
 def parse(file, format):
@@ -70,6 +82,9 @@ def read(file, format):
 
 def write(trees, file, format, **kwargs):
     """Write a sequence of trees to file in the given format."""
+    if isinstance(trees, BaseTree.Tree):
+        # Passed a single tree instead of an iterable -- that's OK
+        trees = [trees]
     do_close = False
     if isinstance(file, basestring):
         file = open(file, 'w+')

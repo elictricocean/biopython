@@ -102,6 +102,39 @@ Many but not all of the supported input file formats can be indexed like
 this. For example "fasta", "fastq", "qual" and even the binary format "sff"
 work, but alignment formats like "phylip", "clustalw" and "nexus" will not.
 
+In most cases you can also use SeqIO.index to get the record from the file
+as a raw string (not a SeqRecord). This can be useful for example to extract
+a sub-set of records from a file where SeqIO cannot output the file format
+(e.g. the plain text SwissProt format, "swiss") or where it is important to
+keep the output 100% identical to the input). For example,
+
+    >>> from Bio import SeqIO
+    >>> record_dict = SeqIO.index("Fasta/f002", "fasta")
+    >>> len(record_dict)
+    3
+    >>> print record_dict.get_raw("gi|1348917|gb|G26685|G26685")
+    >gi|1348917|gb|G26685|G26685 human STS STS_D11734.
+    CGGAGCCAGCGAGCATATGCTGCATGAGGACCTTTCTATCTTACATTATGGCTGGGAATCTTACTCTTTC
+    ATCTGATACCTTGTTCAGATTTCAAAATAGTTGTAGCCTTATCCTGGTTTTACAGATGTGAAACTTTCAA
+    GAGATTTACTGACTTTCCTAGAATAGTTTCTCTACTGGAAACCTGATGCTTTTATAAGCCATTGTGATTA
+    GGATGACTGTTACAGGCTTAGCTTTGTGTGAAANCCAGTCACCTTTCTCCTAGGTAATGAGTAGTGCTGT
+    TCATATTACTNTAAGTTCTATAGCATACTTGCNATCCTTTANCCATGCTTATCATANGTACCATTTGAGG
+    AATTGNTTTGCCCTTTTGGGTTTNTTNTTGGTAAANNNTTCCCGGGTGGGGGNGGTNNNGAAA
+    <BLANKLINE>
+    >>> print record_dict["gi|1348917|gb|G26685|G26685"].format("fasta")
+    >gi|1348917|gb|G26685|G26685 human STS STS_D11734.
+    CGGAGCCAGCGAGCATATGCTGCATGAGGACCTTTCTATCTTACATTATGGCTGGGAATC
+    TTACTCTTTCATCTGATACCTTGTTCAGATTTCAAAATAGTTGTAGCCTTATCCTGGTTT
+    TACAGATGTGAAACTTTCAAGAGATTTACTGACTTTCCTAGAATAGTTTCTCTACTGGAA
+    ACCTGATGCTTTTATAAGCCATTGTGATTAGGATGACTGTTACAGGCTTAGCTTTGTGTG
+    AAANCCAGTCACCTTTCTCCTAGGTAATGAGTAGTGCTGTTCATATTACTNTAAGTTCTA
+    TAGCATACTTGCNATCCTTTANCCATGCTTATCATANGTACCATTTGAGGAATTGNTTTG
+    CCCTTTTGGGTTTNTTNTTGGTAAANNNTTCCCGGGTGGGGGNGGTNNNGAAA
+    <BLANKLINE>
+
+Here the original file and what Biopython would output differ in the line
+wrapping.
+
 Input - Alignments
 ==================
 You can read in alignment files as alignment objects using Bio.AlignIO.
@@ -326,7 +359,8 @@ _BinaryFormats = ["sff", "sff-trim"]
 def write(sequences, handle, format):
     """Write complete set of sequences to a file.
 
-     - sequences - A list (or iterator) of SeqRecord objects.
+     - sequences - A list (or iterator) of SeqRecord objects, or (if using
+                   Biopython 1.54 or later) a single SeqRecord.
      - handle    - File handle object to write to, or filename as string
                    (note older versions of Biopython only took a handle).
      - format    - lower case string describing the file format to write.
@@ -344,9 +378,10 @@ def write(sequences, handle, format):
         raise ValueError("Format required (lower case string)")
     if format != format.lower():
         raise ValueError("Format string '%s' should be lower case" % format)
+
     if isinstance(sequences, SeqRecord):
-        raise ValueError(\
-            "Use a SeqRecord list/iterator, not just a single SeqRecord")
+        #This raised an exception in order version of Biopython
+        sequences = [sequences]
 
     if isinstance(handle, basestring):
         if format in _BinaryFormats :
@@ -741,13 +776,8 @@ def to_alignment(sequences, alphabet=None, strict=True):
                   checking of sequence lengths and alphabets.
                   This is now always done.
 
-    Using this function is now discouraged.  Rather doing this:
-
-    >>> from Bio import SeqIO
-    >>> filename = "Clustalw/protein.aln"
-    >>> alignment = SeqIO.to_alignment(SeqIO.parse(filename, "clustal"))
-
-    You are now encouraged to use Bio.AlignIO instead, e.g.
+    Using this function is now discouraged. You are now encouraged to use
+    Bio.AlignIO instead, e.g.
 
     >>> from Bio import AlignIO
     >>> filename = "Clustalw/protein.aln"
