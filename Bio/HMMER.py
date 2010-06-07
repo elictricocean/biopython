@@ -30,8 +30,8 @@ import os
 import subprocess
 import Bio.Seq
 import Bio.SeqRecord
-
-
+from uuid import uuid4
+import types
 
 def parse( fh, type="hmmer3" ):
     if type=="hmmer3":
@@ -64,6 +64,40 @@ class MissingDBFile(Exception):
 
 
 instanceNum = 0
+
+def HMMScan(seq, db, options=None):
+    """Run hmmscan against a sequence"""
+
+    #if self.pfamInfo is None:
+    #    self.LoadStockInfo( "%s/Pfam-A.scan.dat" % self.baseDir )
+
+    tmpPath = "/tmp/%s.%s" % ( "scanHmmer", uuid4() ) 
+    tmpFile = open( tmpPath, "w" )
+    if type(seq) in [ types.ListType, types.GeneratorType ]:
+        for s in seq:
+            tmpFile.write( s.format("fasta") )
+    else:
+        tmpFile.write( seq.format("fasta") )
+    tmpFile.close()
+
+    try:
+        cmdArray = ["hmmscan", "--notextw" ]
+        if options:
+            cmdArray.extend( self.options )
+        cmdArray.extend( [ db, tmpPath] )
+        pipe = subprocess.Popen( cmdArray, stdout=subprocess.PIPE).stdout
+    except OSError:    
+        os.unlink( tmpPath )
+        raise OSError( "Unable to find hmmscan" )
+    hmmParser = HMMResultsIO()
+    results = hmmParser.parseMultiHMMER3( pipe )
+    for result in results:
+        yield result        
+    pipe.close()
+    try:
+        os.unlink( tmpPath )        
+    except OSError:
+        pass
 
 class HMMER3Scan:
     """HMMER3 Scan Program Control Class."""
