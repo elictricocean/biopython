@@ -22,6 +22,14 @@ DBUSER = 'root'
 DBPASSWD = ''
 TESTDB = 'biosql_test'
 
+
+# -- Generic MySQL
+#DBDRIVER = 'MySQL'
+#DBTYPE = 'mysql'
+# -- Generic PostgreSQL
+#DBDRIVER = 'PostgreSQL'
+#DBTYPE = 'pg'
+
 # -- MySQL
 #DBDRIVER = 'MySQLdb'
 #DBTYPE = 'mysql'

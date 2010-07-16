@@ -19,7 +19,7 @@ import os
 
 _POSTGRES_RULES_PRESENT = False # Hack for BioSQL Bug 2839
 
-def open_database(driver = "MySQLdb", **kwargs):
+def open_database(driver = "MySQL", **kwargs):
     """Main interface for loading a existing BioSQL-style database.
 
     This function is the easiest way to retrieve a connection to a
@@ -30,8 +30,9 @@ def open_database(driver = "MySQLdb", **kwargs):
 
     the various options are:
     driver -> The name of the database driver to use for connecting. The
-    driver should implement the python DB API. By default, the MySQLdb
-    driver is used.
+    driver should implement the python DB API. By default, the MySQL
+    driver is used. For generic system drivers(that work with both Python and 
+    Jythjon), use MySQL or PostgreSQL
     user -> the username to connect to the database with.
     password, passwd -> the password to connect with
     host -> the hostname of the database
