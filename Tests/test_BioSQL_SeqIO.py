@@ -122,7 +122,7 @@ test_files = [ \
 
 print "Connecting to database"
 try:
-    server = BioSeqDatabase.open_database(driver = DBDRIVER,
+    server = BioSeqDatabase.open_database(backend = DBDRIVER,
                                       user = DBUSER, passwd = DBPASSWD,
                                       host = DBHOST, db = TESTDB)
 except Exception, e:

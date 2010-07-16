@@ -29,15 +29,8 @@ TESTDB = 'biosql_test'
 # -- Generic PostgreSQL
 #DBDRIVER = 'PostgreSQL'
 #DBTYPE = 'pg'
-
-# -- MySQL
-#DBDRIVER = 'MySQLdb'
-#DBTYPE = 'mysql'
-# -- PostgreSQL
-#DBDRIVER = 'psycopg'
-#DBTYPE = 'pg'
-# -- SQLite
-DBDRIVER = 'sqlite3'
+# -- Generic SQLite3:
+DBDRIVER = 'SQLite3'
 DBTYPE = 'sqlite'
 TESTDB = os.path.join(os.getcwd(), "BioSQL", "temp_sqlite.db")
 # In memory SQLite does not work with current test structure since the tests

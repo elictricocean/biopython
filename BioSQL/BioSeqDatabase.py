@@ -19,7 +19,7 @@ import os
 
 _POSTGRES_RULES_PRESENT = False # Hack for BioSQL Bug 2839
 
-def open_database(driver = "MySQL", **kwargs):
+def open_database(driver = "MySQLdb", backend=None, **kwargs):
     """Main interface for loading a existing BioSQL-style database.
 
     This function is the easiest way to retrieve a connection to a
@@ -30,9 +30,10 @@ def open_database(driver = "MySQL", **kwargs):
 
     the various options are:
     driver -> The name of the database driver to use for connecting. The
-    driver should implement the python DB API. By default, the MySQL
-    driver is used. For generic system drivers(that work with both Python and 
-    Jythjon), use MySQL or PostgreSQL
+    driver should implement the python DB API. By default, the MySQLdb
+    driver is used. 
+    backend -> Request for generic system drivers(that work with both Python and 
+    Jythjon), options include use MySQL or PostgreSQL, Sqil
     user -> the username to connect to the database with.
     password, passwd -> the password to connect with
     host -> the hostname of the database
@@ -40,17 +41,20 @@ def open_database(driver = "MySQL", **kwargs):
     """
     kw = kwargs.copy()
     conn = None
-    #See if the user is requesting a generic driver
-    if driver in [ "MySQL", "PostgreSQL" ]:
+    #See if the user is requesting a generic backend driver
+    if backend in [ "MySQL", "PostgreSQL", "SQLite3" ]:
+        driver = None
         if os.name == 'java' :
             from com.ziclix.python.sql import zxJDBC
             module = zxJDBC
-            if driver=="MySQL":
+            if backend=="MySQL":
                 kw['driver']="org.gjt.mm.mysql.Driver"
                 driverName = "mysql"
-            if driver=="PostgreSQL":
+            if backend=="PostgreSQL":
                 kw['driver']="org.postgresql.Driver"
                 driverName = "postgresql"
+            if backend=='SQLite3':
+                raise ImportError( "SQLite not yet supported in JAVA" )
             db=None
             host="localhost"
             if "database" in kw:
@@ -71,14 +75,18 @@ def open_database(driver = "MySQL", **kwargs):
                 url= "jdbc:%s://%s/" % (driverName, host  )
             conn = zxJDBC.connect(url, kw['user'], kw['password'], kw['driver'] )
         else:
-            if driver=="MySQL":
+            if backend=="MySQL":
                 import MySQLdb
                 module = MySQLdb
                 driver = "MySQLdb"
-            if driver=="PostgreSQL":
+            if backend=="PostgreSQL":
                 import psycopg
                 module = psycopg
                 driver = "psycopg"
+            if backend=="SQLite3":
+                import sqlite3
+                module = sqlite3
+                driver = "sqlite3"
     else:
         #if they have not requested a generic driver, assume they are requesting a specific one
         module = __import__(driver)
