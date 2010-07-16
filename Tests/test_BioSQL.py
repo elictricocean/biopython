@@ -135,7 +135,7 @@ class ReadTest(unittest.TestCase):
     def setUp(self):
         """Connect to and load up the database.
         """
-        gb_file = os.path.join(os.getcwd(), "GenBank", "cor6_6.gb")
+        gb_file = "GenBank/cor6_6.gb"
         gb_handle = open(gb_file, "r")
         load_database(gb_handle)
         gb_handle.close()
@@ -208,7 +208,7 @@ class SeqInterfaceTest(unittest.TestCase):
         """Make sure SeqRecords from BioSQL implement the right interface.
         """
         test_record = self.item
-        self.assert_(isinstance(test_record.seq, BioSeq.DBSeq))
+        self.assertTrue(isinstance(test_record.seq, BioSeq.DBSeq))
         self.assertEqual(test_record.id, "X62281.1", test_record.id)
         self.assertEqual(test_record.name, "ATKIN2")
         self.assertEqual(test_record.description, "A.thaliana kin2 gene.")
@@ -216,7 +216,7 @@ class SeqInterfaceTest(unittest.TestCase):
         # XXX should do something with annotations once they are like
         # a dictionary
         for feature in test_record.features:
-            self.assert_(isinstance(feature, SeqFeature))
+            self.assertTrue(isinstance(feature, SeqFeature))
         s = str(test_record) #shouldn't cause any errors!
 
     def test_seq(self):
@@ -224,7 +224,7 @@ class SeqInterfaceTest(unittest.TestCase):
         """
         test_seq = self.item.seq
         alphabet = test_seq.alphabet
-        self.assert_(isinstance(alphabet, Alphabet.Alphabet))
+        self.assertTrue(isinstance(alphabet, Alphabet.Alphabet))
         data = test_seq.data
         self.assertEqual(type(data), type(""))
         string_rep = test_seq.tostring()
@@ -239,12 +239,12 @@ class SeqInterfaceTest(unittest.TestCase):
         other = test_seq.toseq()
         self.assertEqual(str(test_seq), str(other))
         self.assertEqual(test_seq.alphabet, other.alphabet)
-        self.assert_(isinstance(other, Seq))
+        self.assertTrue(isinstance(other, Seq))
 
         other = test_seq.tomutable()
         self.assertEqual(str(test_seq), str(other))
         self.assertEqual(test_seq.alphabet, other.alphabet)
-        self.assert_(isinstance(other, MutableSeq))
+        self.assertTrue(isinstance(other, MutableSeq))
 
     def test_addition(self):
         """Check can add DBSeq objects together."""
@@ -255,7 +255,7 @@ class SeqInterfaceTest(unittest.TestCase):
                       test_seq]:
             test = test_seq + other
             self.assertEqual(str(test), str(test_seq) + str(other))
-            self.assert_(isinstance(test, Seq))
+            self.assertTrue(isinstance(test, Seq))
             test = other + test_seq
             self.assertEqual(str(test), str(other) + str(test_seq))
 
@@ -264,7 +264,7 @@ class SeqInterfaceTest(unittest.TestCase):
         """
         test_seq = self.item.seq
         new_seq = test_seq[:10]
-        self.assert_(isinstance(new_seq, BioSeq.DBSeq))
+        self.assertTrue(isinstance(new_seq, BioSeq.DBSeq))
         # simple slicing
         self.assertEqual(test_seq[:5].tostring(), 'ATTTG')
         self.assertEqual(test_seq[0:5].tostring(), 'ATTTG')
@@ -296,11 +296,11 @@ class SeqInterfaceTest(unittest.TestCase):
             raise KeyError("Missing expected entries, have %s" \
                            % repr(cds_feature.qualifiers))
         
-        self.assert_("db_xref" in cds_feature.qualifiers)
+        self.assertTrue("db_xref" in cds_feature.qualifiers)
         multi_ann = cds_feature.qualifiers["db_xref"]
         self.assertEqual(len(multi_ann), 2)
-        self.assert_("GI:16354" in multi_ann)
-        self.assert_("SWISS-PROT:P31169" in multi_ann)
+        self.assertTrue("GI:16354" in multi_ann)
+        self.assertTrue("SWISS-PROT:P31169" in multi_ann)
 
 class LoaderTest(unittest.TestCase):
     """Load a database from a GenBank file.
@@ -416,35 +416,35 @@ class ClosedLoopTest(unittest.TestCase):
     
     def test_NC_005816(self):
         """GenBank file to BioSQL and back to a GenBank file, NC_005816."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "NC_005816.gb"), "gb")
+        self.loop("GenBank/NC_005816.gb", "gb")
 
     def test_NC_000932(self):
         """GenBank file to BioSQL and back to a GenBank file, NC_000932."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "NC_000932.gb"), "gb")
+        self.loop("GenBank/NC_000932.gb", "gb")
 
     def test_NT_019265(self):
         """GenBank file to BioSQL and back to a GenBank file, NT_019265."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "NT_019265.gb"), "gb")
+        self.loop("GenBank/NT_019265.gb", "gb")
 
     def test_protein_refseq2(self):
         """GenBank file to BioSQL and back to a GenBank file, protein_refseq2."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "protein_refseq2.gb"), "gb")
+        self.loop("GenBank/protein_refseq2.gb", "gb")
 
     def test_no_ref(self):
         """GenBank file to BioSQL and back to a GenBank file, noref."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "noref.gb"), "gb")
+        self.loop("GenBank/noref.gb", "gb")
 
     def test_one_of(self):
         """GenBank file to BioSQL and back to a GenBank file, one_of."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "one_of.gb"), "gb")
+        self.loop("GenBank/one_of.gb", "gb")
 
     def test_cor6_6(self):
         """GenBank file to BioSQL and back to a GenBank file, cor6_6."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "cor6_6.gb"), "gb")
+        self.loop("GenBank/cor6_6.gb", "gb")
 
     def test_arab1(self):
         """GenBank file to BioSQL and back to a GenBank file, arab1."""
-        self.loop(os.path.join(os.getcwd(), "GenBank", "arab1.gb"), "gb")
+        self.loop("GenBank/arab1.gb", "gb")
 
     def loop(self, filename, format):
         original_records = list(SeqIO.parse(open(filename, "rU"), format))
@@ -461,7 +461,7 @@ class ClosedLoopTest(unittest.TestCase):
         biosql_records = [db.lookup(name=rec.name) \
                           for rec in original_records]
         #And check they agree
-        self.assert_(compare_records(original_records, biosql_records))
+        self.assertTrue(compare_records(original_records, biosql_records))
         #Now write to a handle...
         handle = StringIO()
         SeqIO.write(biosql_records, handle, "gb")
@@ -478,7 +478,7 @@ class ClosedLoopTest(unittest.TestCase):
             #TODO - remove this hack one we write the date properly:
             del old.annotations["date"]
             del new.annotations["date"]
-            self.assert_(compare_record(old, new))
+            self.assertTrue(compare_record(old, new))
         #Done
         server.close()
 
@@ -489,35 +489,35 @@ class TransferTest(unittest.TestCase):
     
     def test_NC_005816(self):
         """GenBank file to BioSQL, then again to a new namespace, NC_005816."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "NC_005816.gb"), "gb")
+        self.trans("GenBank/NC_005816.gb", "gb")
 
     def test_NC_000932(self):
         """GenBank file to BioSQL, then again to a new namespace, NC_000932."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "NC_000932.gb"), "gb")
+        self.trans("GenBank/NC_000932.gb", "gb")
 
     def test_NT_019265(self):
         """GenBank file to BioSQL, then again to a new namespace, NT_019265."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "NT_019265.gb"), "gb")
+        self.trans("GenBank/NT_019265.gb", "gb")
 
     def test_protein_refseq2(self):
         """GenBank file to BioSQL, then again to a new namespace, protein_refseq2."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "protein_refseq2.gb"), "gb")
+        self.trans("GenBank/protein_refseq2.gb", "gb")
 
     def test_no_ref(self):
         """GenBank file to BioSQL, then again to a new namespace, noref."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "noref.gb"), "gb")
+        self.trans("GenBank/noref.gb", "gb")
 
     def test_one_of(self):
         """GenBank file to BioSQL, then again to a new namespace, one_of."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "one_of.gb"), "gb")
+        self.trans("GenBank/one_of.gb", "gb")
 
     def test_cor6_6(self):
         """GenBank file to BioSQL, then again to a new namespace, cor6_6."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "cor6_6.gb"), "gb")
+        self.trans("GenBank/cor6_6.gb", "gb")
 
     def test_arab1(self):
         """GenBank file to BioSQL, then again to a new namespace, arab1."""
-        self.trans(os.path.join(os.getcwd(), "GenBank", "arab1.gb"), "gb")
+        self.trans("GenBank/arab1.gb", "gb")
 
     def trans(self, filename, format):
         original_records = list(SeqIO.parse(open(filename, "rU"), format))
@@ -534,7 +534,7 @@ class TransferTest(unittest.TestCase):
         biosql_records = [db.lookup(name=rec.name) \
                           for rec in original_records]
         #And check they agree
-        self.assert_(compare_records(original_records, biosql_records))
+        self.assertTrue(compare_records(original_records, biosql_records))
         #Now write to a second name space...
         db_name = "test_trans2_%s" % filename #new namespace!
         db = server.new_database(db_name)
@@ -544,7 +544,7 @@ class TransferTest(unittest.TestCase):
         biosql_records2 = [db.lookup(name=rec.name) \
                           for rec in original_records]
         #And check they also agree
-        self.assert_(compare_records(original_records, biosql_records2))
+        self.assertTrue(compare_records(original_records, biosql_records2))
         #Done
         server.close()
 
@@ -606,14 +606,14 @@ class InDepthLoadTest(unittest.TestCase):
         self.assertEqual(test_record.name, "ATCOR66M")
         self.assertEqual(test_record.id, "X55053.1")
         self.assertEqual(test_record.description, "A.thaliana cor6.6 mRNA.")
-        self.assert_(isinstance(test_record.seq.alphabet, Alphabet.DNAAlphabet))
+        self.assertTrue(isinstance(test_record.seq.alphabet, Alphabet.DNAAlphabet))
         self.assertEqual(test_record.seq[:10].tostring(), 'AACAAAACAC')
 
         test_record = self.db.lookup(accession = "X62281")
         self.assertEqual(test_record.name, "ATKIN2")
         self.assertEqual(test_record.id, "X62281.1")
         self.assertEqual(test_record.description, "A.thaliana kin2 gene.")
-        self.assert_(isinstance(test_record.seq.alphabet, Alphabet.DNAAlphabet))
+        self.assertTrue(isinstance(test_record.seq.alphabet, Alphabet.DNAAlphabet))
         self.assertEqual(test_record.seq[:10].tostring(), 'ATTTGGCCTA')
 
     def test_seq_feature(self):

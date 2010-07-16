@@ -80,7 +80,7 @@ Biopython Tutorial and Cookbook}
 
 \author{Jeff Chang, Brad Chapman, Iddo Friedberg, Thomas Hamelryck, \\
 Michiel de Hoon, Peter Cock, Tiago Antao, Eric Talevich}
-\date{Last Update -- 21 May 2010 (Biopython 1.54+)}
+\date{Last Update -- 6 July 2010 (Biopython 1.54+)}
 
 %Hack to get the logo at the start of the HTML front page:
 %(hopefully this isn't going to be too wide for most people)
@@ -1595,7 +1595,7 @@ To show an example of SeqFeatures in action, let's take a look at the following 
                      /gene="F28B23.12"
 \end{verbatim}
 
-To look at the easiest attributes of the \verb|SeqFeature| first, if you got a \verb|SeqFeature| object for this it would have it \verb|type| of 'mRNA', a \verb|strand| of -1 (due to the `complement'), and would have None for the \verb|ref| and \verb|ref_db| since there are no references to external databases. The \verb|qualifiers| for this SeqFeature would be a Python dictionarary that looked like \verb|{'gene' : ['F28B23.12']}|.
+To look at the easiest attributes of the \verb|SeqFeature| first, if you got a \verb|SeqFeature| object for this it would have it \verb|type| of 'mRNA', a \verb|strand| of -1 (due to the `complement'), and would have None for the \verb|ref| and \verb|ref_db| since there are no references to external databases. The \verb|qualifiers| for this SeqFeature would be a Python dictionary that looked like \verb|{'gene' : ['F28B23.12']}|.
 
 Now let's look at the more tricky part, how the `join' in the location
 line is handled. First, the location for the top level \verb|SeqFeature| (the
@@ -3839,7 +3839,7 @@ directly to screen. This text can be captured or redirected, via
 two ``pipes'', called standard output (the normal results) and standard
 error (for error messages and debug messages). There is also standard
 input, which is any text fed into the tool. These names get shortened
-to stdin, stdout and stderr. When the tool finished, it has a return
+to stdin, stdout and stderr. When the tool finishes, it has a return
 code (an integer), which by convention is zero for success.
 
 Now let's try an example. Unfortunately there are some subtle differences
@@ -3847,6 +3847,18 @@ depending on your Operating System (e.g. Windows versus Unix) and how you
 are running Python (e.g. at the command line, or in IDLE). You may see a
 second terminal window appear while ClustalW works. You may see the
 ClustalW output appear at your Python prompt.
+
+First of all, the simple option using \verb|os.system()|,
+
+\begin{verbatim}
+>>> import os
+>>> return_code = os.system(str(cline))
+...
+>>> print return_code
+0
+\end{verbatim}
+
+Now how we'd suggest doing this with the \verb|subprocess| module:
 
 \begin{verbatim}
 >>> import sys
@@ -9497,6 +9509,34 @@ If you are working on partial coding sequences, you may prefer to use
 \verb|nuc_record.seq.translate(to_stop=True)| in the example above, as
 this wouldn't check for a valid start codon etc.
 
+\subsection{Making the sequences in a FASTA file upper case}
+
+Often you'll get data from collaborators as FASTA files, and sometimes the
+sequences can be in a mixture of upper and lower case. In some cases this is
+deliberate (e.g. lower case for poor quality regions), but usually it is not
+important. You may want to edit the file to make everything consistent (e.g.
+all upper case), and you can do this easily using the \verb|upper()| method
+of the \verb|SeqRecord| object (added in Biopython 1.55):
+
+\begin{verbatim}
+from Bio import SeqIO
+records = (rec.upper() for rec in SeqIO.parse("mixed.fas", "fasta"))
+count = SeqIO.write(records, "upper.fas", "fasta")
+print "Converted %i records to upper case" % count
+\end{verbatim}
+
+How does this work? The first line is just importing the \verb|Bio.SeqIO|
+module. The second line is the interesting bit -- this is a Python
+generator expression which gives an upper case version of each record
+parsed from the input file (\texttt{mixed.fas}). In the third line we give
+this generator expression to the \verb|Bio.SeqIO.write()| function and it
+saves the new upper cases records to our output file (\texttt{upper.fas}).
+
+The reason we use a generator expression (rather than a list or list
+comprehension) is this means only one record is kept in memory at a time.
+This can be really important if you are dealing with large files with
+millions of entries.
+
 \subsection{Sorting a sequence file}
 \label{sec:SeqIO-sort}
 
@@ -9572,8 +9612,8 @@ for id in ids:
 handle.close()
 \end{verbatim}
 
-As a bonus, because this never parses the data into \verb|SeqRecord| objects
-it should be faster.
+As a bonus, because doesn't parse the data into \verb|SeqRecord| objects
+a second time it should be faster.
 
 \subsection{Simple quality filtering for FASTQ files}
 \label{sec:FASTQ-filtering-example}
@@ -10190,9 +10230,7 @@ comprehension more pleasing:
 
 \begin{verbatim}
 >>> from Bio import SeqIO
->>> handle = open("ls_orchid.fasta")
->>> sizes = [len(seq_record) for seq_record in SeqIO.parse(handle, "fasta")]
->>> handle.close()
+>>> sizes = [len(rec) for rec in SeqIO.parse("ls_orchid.fasta", "fasta")]
 >>> len(sizes), min(sizes), max(sizes)
 (94, 572, 789)
 >>> sizes
@@ -10204,9 +10242,7 @@ matplotlib histogram function to display it.
 
 \begin{verbatim}
 from Bio import SeqIO
-handle = open("ls_orchid.fasta")
-sizes = [len(seq_record) for seq_record in SeqIO.parse(handle, "fasta")]
-handle.close()
+sizes = [len(rec) for rec in SeqIO.parse("ls_orchid.fasta", "fasta")]
 
 import pylab
 pylab.hist(sizes, bins=20)
@@ -10256,17 +10292,13 @@ investigate any outliers which could have been recently acquired by horizontal g
 transfer.  Again, for this example we'll reuse our orchid FASTA file \href{http://biopython.org/DIST/docs/tutorial/examples/ls_orchid.fasta}{\tt ls\_orchid.fasta}.
 
 First of all, we will use \verb|Bio.SeqIO| to parse the FASTA file and compile a list
-of all the GC percentages.  Again, you could do this with a for loop, but I prefer the
-list comprehension used here:
+of all the GC percentages.  Again, you could do this with a for loop, but I prefer this:
 
 \begin{verbatim}
 from Bio import SeqIO
 from Bio.SeqUtils import GC
 
-handle = open("ls_orchid.fasta")
-gc_values = [GC(seq_record.seq) for seq_record in SeqIO.parse(handle, "fasta")]
-gc_values.sort()
-handle.close()
+gc_values = sorted(GC(rec.seq) for rec in SeqIO.parse("ls_orchid.fasta", "fasta"))
 \end{verbatim}
 
 Having read in each sequence and calculated the GC\%, we then sorted them into ascending
@@ -10864,36 +10896,6 @@ thing as if you had loaded the GenBank file directly as a SeqRecord using
 
 Biopython's BioSQL module is currently documented at
 \url{http://biopython.org/wiki/BioSQL} which is part of our wiki pages.
-
-\section{InterPro}
-
-The \verb|Bio.InterPro| module works with files from the
-InterPro database, which can be obtained from the InterPro project:
-\url{http://www.ebi.ac.uk/interpro/}.
-
-The \verb|Bio.InterPro.Record| contains all the information stored in
-an InterPro record. Its string representation also is a valid InterPro
-record, but it is NOT guaranteed to be equivalent to the record
-from which it was produced.
-
-The \verb|Bio.InterPro.Record| contains:
-
-\begin{itemize}
-  \item \verb|Database|
-  \item \verb|Accession|
-  \item \verb|Name|
-  \item \verb|Dates|
-  \item \verb|Type|
-  \item \verb|Parent|
-  \item \verb|Process|
-  \item \verb|Function|
-  \item \verb|Component|
-  \item \verb|Signatures|
-  \item \verb|Abstract|
-  \item \verb|Examples|
-  \item \verb|References|
-  \item \verb|Database links|
-\end{itemize}
 
 \chapter{The Biopython testing framework}
 \label{sec:regr_test}

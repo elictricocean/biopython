@@ -3,14 +3,13 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.           
 
-# Python stuff
+"""Atom class, used in Structure objects."""
+
 import numpy
 
-# My stuff
 from Entity import DisorderedEntityWrapper
 from Vector import Vector
 
-__doc__="Atom class, used in Structure objects."
 
 class Atom:
     def __init__(self, name, coord, bfactor, occupancy, altloc, fullname, serial_number,
@@ -64,7 +63,7 @@ class Atom:
         self.serial_number=serial_number
         # Dictionary that keeps addictional properties
         self.xtra={}
-        if element is None :
+        if not element:
             import warnings
             from PDBExceptions import PDBConstructionWarning
             warnings.warn("Atom object (name=%s) without element" % name,

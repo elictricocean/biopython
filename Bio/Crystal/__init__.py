@@ -217,12 +217,12 @@ class Crystal:
 
     def fix(self):
         data = self.data
-        for key in data.keys():
-            element = data[ key ]
+        for key in data:
+            element = data[key]
             if isinstance(element, Chain):
                 pass
             elif type(element) == type(''):
-                data[ key ] = Chain(element)
+                data[key] = Chain(element)
             else:
                 raise TypeError
 
@@ -262,9 +262,7 @@ class Crystal:
     def keys(self): return self.data.keys()
     def items(self): return self.data.items()
     def values(self): return self.data.values()
-
-    #TODO - Define the __in__ method?
-
+    def __contains__(self, value): return value in self.data
     def has_key(self, key): return key in self.data
     def get(self, key, failobj=None):
         return self.data.get(key, failobj)
