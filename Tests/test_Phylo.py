@@ -5,12 +5,16 @@
 
 """Unit tests for the Bio.Phylo module."""
 
+import sys
 import unittest
 from cStringIO import StringIO
 
 from Bio import Phylo
 from Bio.Phylo import PhyloXML
 
+# Example Newick and Nexus files
+EX_NEWICK = 'Nexus/int_node_labels.nwk'
+EX_NEXUS = 'Nexus/test_Nexus_input.nex'
 
 # Example PhyloXML files
 EX_APAF = 'PhyloXML/apaf.xml'
@@ -18,8 +22,51 @@ EX_BCL2 = 'PhyloXML/bcl_2.xml'
 EX_PHYLO = 'PhyloXML/phyloxml_examples.xml'
 
 
+class IOTests(unittest.TestCase):
+    """Tests for parsing and writing the supported formats."""
+
+    def test_newick(self):
+        """Read a Newick file with one tree."""
+        tree = Phylo.read(EX_NEWICK, 'newick')
+        self.assertEqual(len(tree.get_terminals()), 28)
+
+    def test_newick(self):
+        """Parse a Nexus file with multiple trees."""
+        trees = list(Phylo.parse(EX_NEXUS, 'nexus'))
+        self.assertEqual(len(trees), 3)
+        for tree in trees:
+            self.assertEqual(len(tree.get_terminals()), 9)
+
+    def test_convert(self):
+        """Convert a tree between all supported formats."""
+        mem_file_1 = StringIO()
+        mem_file_3 = StringIO()
+        if sys.version_info[0] == 3:
+            from io import BytesIO
+            mem_file_2 = BytesIO()
+        else:
+            mem_file_2 = StringIO()
+        Phylo.convert(EX_NEWICK, 'newick', mem_file_1, 'nexus')
+        mem_file_1.seek(0)
+        Phylo.convert(mem_file_1, 'nexus', mem_file_2, 'phyloxml')
+        mem_file_2.seek(0)
+        Phylo.convert(mem_file_2, 'phyloxml', mem_file_3, 'newick')
+        mem_file_3.seek(0)
+        tree = Phylo.read(mem_file_3, 'newick')
+        self.assertEqual(len(tree.get_terminals()), 28)
+
+
 class TreeTests(unittest.TestCase):
     """Tests for methods on BaseTree.Tree objects."""
+    def test_root_with_outgroup(self):
+        """Tree.root_with_outgroup: reroot at a given clade."""
+        tree = Phylo.read(EX_APAF, 'phyloxml')
+        orig_num_tips = len(tree.get_terminals())
+        orig_tree_len = tree.total_branch_length()
+        tree.root_with_outgroup({'name': '19_NEMVE'}, {'name': '20_NEMVE'})
+        self.assertEqual(orig_num_tips, len(tree.get_terminals()))
+        self.assertAlmostEqual(orig_tree_len, tree.total_branch_length())
+
     # Magic method
     def test_str(self):
         """Tree.__str__: pretty-print to a string.

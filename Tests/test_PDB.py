@@ -15,7 +15,7 @@ import warnings
 from StringIO import StringIO
 
 try:
-    from numpy.random import random
+    import numpy
 except ImportError:
     from Bio import MissingExternalDependencyError
     raise MissingExternalDependencyError(\
@@ -25,7 +25,6 @@ from Bio.Seq import Seq
 from Bio.Alphabet import generic_protein
 from Bio.PDB import PDBParser, PPBuilder, CaPPBuilder, PDBIO
 from Bio.PDB import HSExposureCA, HSExposureCB, ExposureCN
-from Bio.PDB.NeighborSearch import NeighborSearch
 from Bio.PDB.PDBExceptions import PDBConstructionException, PDBConstructionWarning
 
 
@@ -51,7 +50,7 @@ class A_ExceptionTest(unittest.TestCase):
             orig_showwarning = warnings.showwarning
             all_warns = []
             def showwarning(*args, **kwargs):
-                all_warns.append(*args[0])
+                all_warns.append(args[0])
             warnings.showwarning = showwarning
             # Trigger warnings
             p = PDBParser(PERMISSIVE=True)
@@ -485,6 +484,59 @@ class ParseTest(unittest.TestCase):
 
 class ParseReal(unittest.TestCase):
     """Testing with real PDB files."""
+    
+    def test_c_n(self):
+        """Extract polypeptides from 1A80."""
+        warnings.resetwarnings()
+        parser = PDBParser(PERMISSIVE=False)
+        structure = parser.get_structure("example", "PDB/1A8O.pdb")
+        self.assertEqual(len(structure), 1)
+        for ppbuild in [PPBuilder(), CaPPBuilder()]:
+            #==========================================================
+            #First try allowing non-standard amino acids,
+            polypeptides = ppbuild.build_peptides(structure[0], False)
+            self.assertEqual(len(polypeptides), 1)
+            pp = polypeptides[0]
+            # Check the start and end positions
+            self.assertEqual(pp[0].get_id()[1], 151)
+            self.assertEqual(pp[-1].get_id()[1], 220)
+            # Check the sequence
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            #Here non-standard MSE are shown as M
+            self.assertEqual("MDIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNWMTETLLVQ"
+                             "NANPDCKTILKALGPGATLEEMMTACQG", str(s))
+            #==========================================================
+            #Now try strict version with only standard amino acids
+            #Should ignore MSE 151 at start, and then break the chain
+            #at MSE 185, and MSE 214,215
+            polypeptides = ppbuild.build_peptides(structure[0], True)
+            self.assertEqual(len(polypeptides), 3)
+            #First fragment
+            pp = polypeptides[0]
+            self.assertEqual(pp[0].get_id()[1], 152)
+            self.assertEqual(pp[-1].get_id()[1], 184)
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("DIRQGPKEPFRDYVDRFYKTLRAEQASQEVKNW", str(s))
+            #Second fragment
+            pp = polypeptides[1]
+            self.assertEqual(pp[0].get_id()[1], 186)
+            self.assertEqual(pp[-1].get_id()[1], 213)
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("TETLLVQNANPDCKTILKALGPGATLEE", str(s))
+            #Third fragment
+            pp = polypeptides[2]
+            self.assertEqual(pp[0].get_id()[1], 216)
+            self.assertEqual(pp[-1].get_id()[1], 220)
+            s = pp.get_sequence()
+            self.assertTrue(isinstance(s, Seq))
+            self.assertEqual(s.alphabet, generic_protein)
+            self.assertEqual("TACQG", str(s))
 
     def test_strict(self):
         """Parse 1A8O.pdb file in strict mode."""
@@ -685,27 +737,6 @@ class Exposure(unittest.TestCase):
         self.assertEqual(48, residues[-2].xtra["EXP_CN"])
         self.assertEqual(1, len(residues[-1].xtra))
         self.assertEqual(38, residues[-1].xtra["EXP_CN"])
-
-
-class NeighborTest(unittest.TestCase):
-    def setUp(self):
-        warnings.resetwarnings()
-
-    def test_neighbor_search(self):
-        """NeighborSearch: Find nearby randomly generated coordinates.
-         
-        Based on the self test in Bio.PDB.NeighborSearch.
-        """
-        class RandomAtom:
-            def __init__(self):
-                self.coord = 100 * random(3)
-            def get_coord(self):
-                return self.coord
-        for i in range(0, 20):
-            atoms = [RandomAtom() for j in range(100)]
-            ns = NeighborSearch(atoms)
-            hits = ns.search_all(5.0)
-            self.assertTrue(hits >= 0)
 
 # -------------------------------------------------------------
 

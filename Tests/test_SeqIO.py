@@ -36,7 +36,7 @@ nucleotide_alphas = [Alphabet.generic_nucleotide,
                      Alphabet.Gapped(Alphabet.generic_nucleotide)]
 no_alpha_formats = ["fasta","clustal","phylip","tab","ig","stockholm","emboss",
                     "fastq","fastq-solexa","fastq-illumina","qual"]
-possible_unknown_seq_formats = ["qual", "genbank", "gb", "embl"]
+possible_unknown_seq_formats = ["qual", "genbank", "gb", "embl", "imgt"]
 
 #List of formats including alignment only file formats we can read AND write.
 #The list is initially hard coded to preserve the original order of the unit
@@ -77,7 +77,7 @@ test_files = [ \
     ("fasta",  False, 'Fasta/loveliesbleeding.pro', 1),
     ("fasta",  False, 'Fasta/rose.pro', 1),
     ("fasta",  False, 'Fasta/rosemary.pro', 1),
-#Following examples are also used in test_Fasta.py
+#Following examples are also used in test_BioSQL_SeqIO.py
     ("fasta",  False, 'Fasta/f001', 1), #Protein
     ("fasta",  False, 'Fasta/f002', 3), #DNA
     #("fasta", False, 'Fasta/f003', 2), #Protein with comments
@@ -138,7 +138,8 @@ test_files = [ \
     ("genbank",False, 'GenBank/gbvrl1_start.seq', 3),
 #Following files are also used in test_GFF.py
     ("genbank",False, 'GFF/NC_001422.gbk', 1),
-#Following files are currently only used here:
+#Following files are currently only used here or in test_SeqIO_index.py:
+    ("embl",   False, 'EMBL/epo_prt_selection.embl', 9), #proteins
     ("embl",   False, 'EMBL/TRBG361.embl', 1),
     ("embl",   False, 'EMBL/DD231055_edited.embl', 1),
     ("embl",   False, 'EMBL/SC10H5.embl', 1), # Pre 2006 style ID line
@@ -147,6 +148,7 @@ test_files = [ \
     ("embl",   False, 'EMBL/AE017046.embl', 1), #See also NC_005816.gb
     ("embl",   False, 'EMBL/Human_contigs.embl', 2), #contigs, no sequences
     ("embl",   False, 'EMBL/A04195.imgt', 1), # features over indented for EMBL
+    ("imgt",   False, 'EMBL/A04195.imgt', 1), # features over indented for EMBL
     ("stockholm", True,  'Stockholm/simple.sth', 2),
     ("stockholm", True,  'Stockholm/funny.sth', 5),
 #Following PHYLIP files are currently only used here and in test_AlignIO.py,
@@ -365,7 +367,7 @@ def check_simple_write_read(records, indent=" "):
             assert len(r1) == len(r2)
 
             #Check the sequence
-            if format in ["gb", "genbank", "embl"]:
+            if format in ["gb", "genbank", "embl", "imgt"]:
                 #The GenBank/EMBL parsers will convert to upper case.
                 if isinstance(r1.seq, UnknownSeq) \
                 and isinstance(r2.seq, UnknownSeq):

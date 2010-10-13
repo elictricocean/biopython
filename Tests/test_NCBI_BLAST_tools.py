@@ -180,14 +180,35 @@ class CheckCompleteArgList(unittest.TestCase):
         if "-use_test_remote_service" in missing :
             #Known issue, seems to be present in some builds (Bug 3043)
             missing.remove("-use_test_remote_service")
+        if exe_name == "blastn" and "-off_diagonal_range" in extra:
+            #Added in BLAST 2.2.23+
+            extra.remove("-off_diagonal_range")
+        if exe_name == "tblastx":
+            #These appear to have been removed in BLAST 2.2.23+
+            #(which seems a bit odd - TODO - check with NCBI?)
+            extra = extra.difference(["-gapextend","-gapopen",
+                                      "-xdrop_gap","-xdrop_gap_final"])
+        if exe_name in ["rpsblast", "rpstblastn"]:
+            #These appear to have been removed in BLAST 2.2.24+
+            #(which seems a bit odd - TODO - check with NCBI?)
+            extra = extra.difference(["-num_threads"])
+        if exe_name in ["tblastn", "tblastx"]:
+            #These appear to have been removed in BLAST 2.2.24+
+            extra = extra.difference(["-db_soft_mask"])
+        #This was added in BLAST 2.2.24+ to most/all the tools, so
+        #will be seen as an extra argument on older versions:
+        if "-seqidlist" in extra:
+            extra.remove("-seqidlist")
 
-        if extra or missing :
-            raise MissingExternalDependencyError("BLAST+ and Biopython out of sync. "
-                  "Your version of the NCBI BLAST+ tool %s does not match what we "
-                  "are expecting. Please update your copy of Biopython, or report "
-                  "this issue if you are already using the latest version. "
-                  "(Exta args: %s; Missing: %s)" \
-                  % (exe_name, ",".join(sorted(extra)), ",".join(sorted(missing))))
+        if extra or missing:
+            raise MissingExternalDependencyError("BLAST+ and Biopython out "
+                  "of sync. Your version of the NCBI BLAST+ tool %s does not "
+                  "match what we are expecting. Please update your copy of "
+                  "Biopython, or report this issue if you are already using "
+                  "the latest version. (Exta args: %s; Missing: %s)" \
+                  % (exe_name,
+                     ",".join(sorted(extra)),
+                     ",".join(sorted(missing))))
 
         #An almost trivial example to test any validation
         cline = wrapper(exe, query="dummy")

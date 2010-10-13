@@ -109,14 +109,16 @@ class CharBuffer:
             return None
         word.append(first)
         if first=="'":                                      # word starts with a quote
-            quoted=True
+            quoted="'"
+        elif first=='"':
+            quoted='"'
         elif first in PUNCTUATION:                          # if it's punctuation, return immediately
             return first
         while True:             
             c=self.peek()
-            if c=="'":                                      # a quote?
+            if c==quoted:                                      # a quote?
                 word.append(self.next())                    # store quote 
-                if self.peek()=="'":                        # double quote
+                if self.peek()==quoted:                        # double quote
                     skip=self.next()                        # skip second quote 
                 elif quoted:                                # second single quote ends word
                     break
@@ -385,6 +387,8 @@ def _kill_comments_and_break_lines(text):
    
     NOTE: this function is very slow for large files, and obsolete when using C extension cnexus
     """
+    import warnings
+    warnings.warn("This function is very slow for large files, and obsolete when using C extension cnexus", PendingDeprecationWarning)
     contents=CharBuffer(text)
     newtext=[] 
     newline=[]
@@ -876,8 +880,9 @@ class Nexus(object):
             #check for invalid characters
             for i,c in enumerate(iupac_seq.tostring()):
                 if c not in self.valid_characters and c!=self.gap and c!=self.missing:
-                    raise NexusError('Taxon %s: Illegal character %s in line: %s (check dimensions / interleaving)'\
-                            % (id,c,l[i-10:i+10]))
+                    raise NexusError( \
+                        ('Taxon %s: Illegal character %s in sequence %s ' + \
+                         '(check dimensions/interleaving)') % (id,c, iupac_seq))
             #add sequence to matrix
             if first_matrix_block:
                 self.unaltered_taxlabels.append(id)
@@ -929,6 +934,8 @@ class Nexus(object):
         
     def _tree(self,options):
         opts=CharBuffer(options)
+        if opts.peek_nonwhitespace()=='*': # a star can be used to make it the default tree in some software packages
+            dummy=opts.next_nonwhitespace()
         name=opts.next_word()
         if opts.next_nonwhitespace()!='=':
             raise NexusError('Syntax error in tree description: %s' \

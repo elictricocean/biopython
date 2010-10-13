@@ -4,6 +4,12 @@
 # as part of this package.
 
 """Additional unit tests for Bio.SeqIO.convert(...) function."""
+import sys
+if sys.version_info[0] >= 3:
+    from Bio import MissingExternalDependencyError
+    raise MissingExternalDependencyError(\
+        "Skipping since currently this is very slow on Python 3.")
+    
 import os
 import unittest
 from StringIO import StringIO
@@ -122,9 +128,11 @@ tests = [
     ("Quality/sanger_faked.fastq", "fastq-sanger", generic_dna),
     ("Quality/solexa_faked.fastq", "fastq-solexa", generic_dna),
     ("Quality/illumina_faked.fastq", "fastq-illumina", generic_dna),
+    ("EMBL/epo_prt_selection.embl", "embl", None),
     ("EMBL/U87107.embl", "embl", None),
     ("EMBL/TRBG361.embl", "embl", None),
     ("EMBL/A04195.imgt", "embl", None), #Not a proper EMBL file, an IMGT file
+    ("EMBL/A04195.imgt", "imgt", None),
     ("GenBank/NC_000932.faa", "fasta", generic_protein),
     ("GenBank/NC_005816.faa", "fasta", generic_protein),
     ("GenBank/NC_005816.tsv", "tab", generic_protein),

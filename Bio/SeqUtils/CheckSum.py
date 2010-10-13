@@ -11,15 +11,19 @@
 # crc64 is adapted from BioPerl
 
 from binascii import crc32 as _crc32
+from Bio._py3k import _as_bytes
 
 def crc32(seq):
     """Returns the crc32 checksum for a sequence (string or Seq object)."""
+    #NOTE - On Python 2 returns a signed int, on Python 3 it is unsigned
+    #Docs suggest should use crc32(x) & 0xffffffff for consistency.
+    #TODO - Should we return crc32(x) & 0xffffffff here?
     try:
         #Assume its a Seq object
-        return _crc32(seq.tostring())
+        return _crc32(_as_bytes(seq.tostring()))
     except AttributeError:
-        #Assume its a string
-        return _crc32(seq)
+        #Assume its a string/unicode
+        return _crc32(_as_bytes(seq))
 
 def _init_table_h():
     _table_h = []
@@ -95,11 +99,11 @@ def seguid(seq):
     import base64
     try:
         #Assume its a Seq object
-         seq = seq.tostring()
+        seq = seq.tostring()
     except AttributeError:
         #Assume its a string
         pass
-    m.update(seq.upper().encode())
+    m.update(_as_bytes(seq.upper()))
     try:
         #For Python 3+
         return base64.encodebytes(m.digest()).decode().replace("\n","").rstrip("=")

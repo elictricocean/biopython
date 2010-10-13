@@ -22,14 +22,15 @@ import warnings
 
 from Bio.Phylo import PhyloXML as PX
 
-if sys.version_info[0] == 3:
-    # cElementTree regression in Python 3; use the pure-Python version
+if (3, 0, 0) <= sys.version_info[:3] <= (3, 1, 2):
+    # Workaround for cElementTree regression in python 3.0--3.1.2
     # See http://bugs.python.org/issue9257
     from xml.etree import ElementTree
 else:
     try:
         from xml.etree import cElementTree as ElementTree
     except ImportError:
+        # Alternative Python implementation, perhaps?
         try:
             from xml.etree import ElementTree as ElementTree
         except ImportError:
@@ -113,7 +114,7 @@ def parse(file):
     """
     return Parser(file).parse()
 
-def write(obj, file, encoding=None, indent=False):
+def write(obj, file, encoding='utf-8', indent=True):
     """Write a phyloXML file.
 
     The first argument is an instance of Phyloxml, Phylogeny or BaseTree.Tree,
@@ -677,13 +678,10 @@ class Writer(object):
         assert isinstance(phyloxml, PX.Phyloxml), "Not a Phyloxml object"
         self._tree = ElementTree.ElementTree(self.phyloxml(phyloxml))
 
-    def write(self, file, encoding=None, indent=False):
+    def write(self, file, encoding='utf-8', indent=True):
         if indent:
             _indent(self._tree.getroot())
-        if encoding is not None:
-            self._tree.write(file, encoding)
-        else:
-            self._tree.write(file)
+        self._tree.write(file, encoding)
         return len(self._tree.getroot())
 
     # Convert classes to ETree elements
