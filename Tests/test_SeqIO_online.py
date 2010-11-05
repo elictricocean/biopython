@@ -14,6 +14,11 @@ Goals:
     May catch some format changes early too.
 """
 import sys
+if sys.version_info[0] >= 3:
+    from Bio import MissingExternalDependencyError
+    raise MissingExternalDependencyError(\
+        "This test doesn't work on Python 3 (bytes vs unicode issue).")
+
 import unittest
 
 import requires_internet
@@ -74,7 +79,7 @@ class EntrezTests(unittest.TestCase):
             self.assertEqual(seguid(record.seq), checksum)
 
 for database, formats, entry, length, checksum in [
-    ("genome", ["fasta", "gb"], "X52960", 248,
+    ("nuccore", ["fasta", "gb"], "X52960", 248,
      "Ktxz0HgMlhQmrKTuZpOxPZJ6zGU"),
     ("nucleotide", ["fasta", "gb"], "6273291", 902,
      "bLhlq4mEFJOoS9PieOx4nhGnjAQ"),

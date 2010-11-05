@@ -25,7 +25,6 @@ def send_warnings_to_stdout(message, category, filename, lineno,
     #TODO - Have Biopython DataLossWarning?
     if category in [UserWarning]:
         print "%s - %s" % (category.__name__, message)
-warnings.resetwarnings()
 warnings.showwarning = send_warnings_to_stdout
 
 
@@ -115,6 +114,11 @@ test_files = [ \
     ("swiss",  False, 'SwissProt/sp016', 1),
 #Following example is also used in test_registry.py
     ("swiss",  False, 'Registry/EDD_RAT.dat', 1),
+#Following examples are also used in test_Uniprot.py
+    ("uniprot-xml",  False, 'SwissProt/uni001', 1),
+    ("uniprot-xml",  False, 'SwissProt/uni002', 3),
+    ("uniprot-xml",  False, 'SwissProt/Q13639.xml', 1),
+    ("swiss",    False, 'SwissProt/Q13639.txt', 1),
 #Following examples are also used in test_GenBank.py
     ("genbank",False, 'GenBank/noref.gb', 1),
     ("genbank",False, 'GenBank/cor6_6.gb', 6),
@@ -410,7 +414,7 @@ def check_simple_write_read(records, indent=" "):
 
 #Check parsers can cope with an empty file
 for t_format in SeqIO._FormatToIterator:
-    if t_format in SeqIO._BinaryFormats:
+    if t_format in SeqIO._BinaryFormats or t_format=="uniprot-xml":
         #Not allowed empty SFF files.
         continue
     handle = StringIO()
@@ -444,15 +448,10 @@ for (t_format, t_alignment, t_filename, t_count) in test_files:
         try:
             record = seq_iterator.next()
         except StopIteration:
-            record = None
-        #Note that if the SeqRecord class has a __len__ method,
-        #and it has a zero-length sequence, this would fail an
-        #"if record" test.
-        if record is not None:
-            records3.append(record)
-        else:
             break
-
+        assert record is not None, "Should raise StopIteration not return None"
+        records3.append(record)
+        
     #Try a mixture of next() and list (a torture test!)
     seq_iterator = SeqIO.parse(handle=open(t_filename,mode), format=t_format)
     try:
