@@ -11,6 +11,7 @@ additional facilities.
 Command line options:
 
 --help        -- show usage info
+--offline     -- skip tests which require internet access
 -g;--generate -- write the output file for a test instead of comparing it.
                  The name of the test to write the output for must be
                  specified.
@@ -80,6 +81,7 @@ if sys.version_info[0:2] == (3,1):
 system_lang = os.environ.get('LANG', 'C') #Cache this
 
 def main(argv):
+    """Run tests, return number of failures (integer)."""
     # insert our paths in sys.path:
     # ../build/lib.*
     # ..
@@ -105,7 +107,7 @@ def main(argv):
     # get the command line options
     try:
         opts, args = getopt.getopt(argv, 'gv', ["generate", "verbose",
-            "doctest", "help"])
+            "doctest", "help", "offline"])
     except getopt.error, msg:
         print msg
         print __doc__
@@ -118,6 +120,12 @@ def main(argv):
         if o == "--help":
             print __doc__
             return 0
+        if o == "--offline":
+            print "Skipping any tests requiring internet access"
+            #This is a bit of a hack...
+            import requires_internet
+            requires_internet.check.available = False
+            #The check() function should now report internet not available
         if o == "-g" or o == "--generate":
             if len(args) > 1:
                 print "Only one argument (the test name) needed for generate"
@@ -146,7 +154,7 @@ def main(argv):
 
     # run the tests
     runner = TestRunner(args, verbosity)
-    runner.run()
+    return runner.run()
 
 
 class ComparisonTestCase(unittest.TestCase):
@@ -335,6 +343,7 @@ class TestRunner(unittest.TextTestRunner):
             sys.stdout = stdout
 
     def run(self):
+        """Run tests, return number of failures (integer)."""
         failures = 0
         startTime = time.time()
         for test in self.tests:
@@ -351,8 +360,11 @@ class TestRunner(unittest.TextTestRunner):
         sys.stderr.write("\n")
         if failures:
             sys.stderr.write("FAILED (failures = %d)\n" % failures)
+        return failures
 
 
 if __name__ == "__main__":
-    #Don't do a sys.exit(...) as it isn't nice if run from IDLE.
-    main(sys.argv[1:])
+    errors = main(sys.argv[1:])
+    if errors:
+        #Doing a sys.exit(...) isn't nice if run from IDLE...
+        sys.exit(1)

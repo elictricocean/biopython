@@ -51,7 +51,7 @@ if sys.version_info[:2] < (2, 4):
           + "yet).  Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 elif sys.version_info[:2] == (2,4):
-    print ("Warning - we are phasing out support for Python 2.4")
+    print ("WARNING - This is the last Biopython release to support Python 2.4")
 elif sys.version_info[0] == 3:
     print("Biopython does not yet officially support Python 3, but you")
     print("can try it by first using the 2to3 script on our source code.")
@@ -295,18 +295,12 @@ elif sys.version_info[0] == 3:
 else :
     EXTENSIONS = [
     Extension('Bio.cpairwise2',
-              ['Bio/cpairwise2module.c',
-               'Bio/csupport.c'],
+              ['Bio/cpairwise2module.c'],
               include_dirs=["Bio"]
               ),
     Extension('Bio.trie',
               ['Bio/triemodule.c',
                'Bio/trie.c'],
-              include_dirs=["Bio"]
-              ),
-    Extension('Bio.cMarkovModel',
-              ['Bio/cMarkovModelmodule.c',
-               'Bio/csupport.c'],
               include_dirs=["Bio"]
               ),
 #Commented out due to the build dependency on flex, see Bug 2619

@@ -12,11 +12,11 @@ import unittest
 from itertools import chain
 
 # Python 2.4 doesn't have ElementTree, which PhyloXMLIO needs
-from Bio import MissingExternalDependencyError
+from Bio import MissingPythonDependencyError
 try:
     from Bio.Phylo import PhyloXML as PX, PhyloXMLIO
 except ImportError:
-    raise MissingExternalDependencyError(
+    raise MissingPythonDependencyError(
             "Install an ElementTree implementation if you want to use "
             "Bio.Phylo to parse phyloXML files.")
 

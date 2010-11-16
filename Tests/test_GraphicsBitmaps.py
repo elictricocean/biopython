@@ -17,19 +17,29 @@ import random
 import unittest
 
 from Bio import MissingExternalDependencyError
+from Bio import MissingPythonDependencyError
+
 try:
     # Skip the test if reportlab is not installed
     import reportlab as r
     del r
 except:
-    raise MissingExternalDependencyError(\
+    raise MissingPythonDependencyError(
         "Install ReportLab if you want to use Bio.Graphics.")
 try:
     # Skip the test if reportlab is not installed
     from reportlab.graphics import renderPM
 except:
-    raise MissingExternalDependencyError(\
+    raise MissingPythonDependencyError(\
         "Install ReportLab's renderPM module if you want to create "
+        "bitmaps with Bio.Graphics.")
+try:
+    # Skip the test if PIL is not installed
+    import Image as i
+    del i
+except:
+    raise MissingPythonDependencyError(\
+        "Install PIL (Python Imaging Library) if you want to create "
         "bitmaps with Bio.Graphics.")
 
 from reportlab.graphics.renderPM import RenderPMError

@@ -239,6 +239,8 @@ names are also used in Bio.AlignIO and include the following:
  - qual    - A "FASTA like" format holding PHRED quality values from
              sequencing DNA, but no actual sequences (usually provided
              in separate FASTA files).
+ - uniprot-xml - The UniProt XML format (replacement for the SwissProt plain
+             text format which we call "swiss")
 
 Note that while Bio.SeqIO can read all the above file formats, it cannot
 write to all of them.
@@ -309,7 +311,7 @@ import SffIO
 import SwissIO
 import TabIO
 import QualityIO #FastQ and qual files
-
+import UniprotIO
 
 #Convention for format names is "mainname-subtype" in lower case.
 #Please use the same names as BioPerl or EMBOSS where possible.
@@ -341,6 +343,7 @@ _FormatToIterator = {"fasta" : FastaIO.FastaIterator,
                      "sff": SffIO.SffIterator,
                      #Not sure about this in the long run:
                      "sff-trim": SffIO._SffTrimIterator,
+                     "uniprot-xml": UniprotIO.UniprotIterator,
                      }
 
 _FormatToWriter = {"fasta" : FastaIO.FastaWriter,
@@ -479,6 +482,8 @@ def parse(handle, format, alphabet=None):
     #string mode (see the leading r before the opening quote).
     from Bio import AlignIO
 
+    handle_close = False
+    
     if isinstance(handle, basestring):
         #Hack for SFF, will need to make this more general in future
         if format in _BinaryFormats :
@@ -486,6 +491,7 @@ def parse(handle, format, alphabet=None):
         else :
             handle = open(handle, "rU")
         #TODO - On Python 2.5+ use with statement to close handle
+        handle_close = True
 
     #Try and give helpful error messages:
     if not isinstance(format, basestring):
@@ -502,18 +508,24 @@ def parse(handle, format, alphabet=None):
     if format in _FormatToIterator:
         iterator_generator = _FormatToIterator[format]
         if alphabet is None:
-            return iterator_generator(handle)
-        try:
-            return iterator_generator(handle, alphabet=alphabet)
-        except:
-            return _force_alphabet(iterator_generator(handle), alphabet)
+            i = iterator_generator(handle)
+        else:
+            try:
+                i = iterator_generator(handle, alphabet=alphabet)
+            except TypeError:
+                i = _force_alphabet(iterator_generator(handle), alphabet)
     elif format in AlignIO._FormatToIterator:
         #Use Bio.AlignIO to read in the alignments
         #TODO - Can this helper function can be replaced with a generator
         #expression, or something from itertools?
-        return _iterate_via_AlignIO(handle, format, alphabet)
+        i = _iterate_via_AlignIO(handle, format, alphabet)
     else:
         raise ValueError("Unknown format '%s'" % format)
+    #This imposes some overhead... wait until we drop Python 2.4 to fix it
+    for r in i:
+        yield r
+    if handle_close:
+        handle.close()
 
 #This is a generator function
 def _iterate_via_AlignIO(handle, format, alphabet):
