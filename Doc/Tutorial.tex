@@ -80,7 +80,7 @@ Biopython Tutorial and Cookbook}
 
 \author{Jeff Chang, Brad Chapman, Iddo Friedberg, Thomas Hamelryck, \\
 Michiel de Hoon, Peter Cock, Tiago Antao, Eric Talevich, Bartek Wilczy\'{n}ski}
-\date{Last Update -- 28 October 2010 (Biopython 1.55+)}
+\date{Last Update -- 29 November 2010 (Biopython 1.56+)}
 
 %Hack to get the logo at the start of the HTML front page:
 %(hopefully this isn't going to be too wide for most people)
@@ -1719,6 +1719,67 @@ Bio.SeqFeature.ExactPosition(5)
 
 That is all of the nitty gritty about dealing with fuzzy positions in Biopython. It has been designed so that dealing with fuzziness is not that much more complicated than dealing with exact positions, and hopefully you find that true!
 
+\subsection{Sequence}
+
+A \verb|SeqFeature| object doesn't directly contain a sequence, instead its location (see Section~\ref{sec:locations}) describes how to get this from the parent sequence. For example consider a (short) gene sequence with location 5:18 on the reverse strand, which in GenBank/EMBL notation using 1-based counting would be \texttt{complement(4..18)}, like this:
+
+\begin{verbatim}
+from Bio import Seq
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+example_parent = Seq("ACCGAGACGGCAAAGGCTAGCATAGGTATGAGACTTCCTTCCTGCCAGTGCTGAGGAACTGGGAGCCTAC")
+example_feature = example_feature = SeqFeature(FeatureLocation(5, 18), type="gene", strand=-1)
+\end{verbatim}
+
+You could take the parent sequence, slice it to extract 5:18, and then take the reverse complement:
+
+\begin{verbatim}
+feature_seq = example_parent[5:18].reverse_complement()
+\end{verbatim}
+
+This is a simple example so this isn't too bad -- however once you have to deal with compound features (joins) this is rather messy. Instead, the \verb|SeqFeature| object has an \verb|extract| method to take care of all this:
+
+\begin{verbatim}
+feature_seq = example_feature.extract(example_parent)
+\end{verbatim}
+
+The \verb|extract| method was added in Biopython 1.53, and in Biopython 1.56 the \verb|SeqFeature| was further extended to give its length as that of the region of sequence it describes.
+
+\begin{verbatim}
+>>> print example_feature.extract(example_parent)
+AGCCTTTGCCGTC
+>>> print len(example_feature.extract(example_parent))
+13
+>>> print len(example_feature)
+13
+\end{verbatim}
+
+\section{Location testing}
+
+As of Biopython 1.56, you can use the Python keyword \verb|in| with a
+\verb|SeqFeature| to see if the base/residue for a parent coordinate is
+within the feature or not.
+
+For example, suppose you have a SNP of interest and you want to know which
+features this SNP is within, and lets suppose this SNP is at index 4350
+(Python counting!). Here is a simple brute force solution where we just
+check all the features one by one in a loop:
+
+\begin{verbatim}
+>>> from Bio import SeqIO
+>>> my_snp = 4350
+>>> record = SeqIO.read("NC_005816.gb", "genbank")
+>>> for feature in record.features:
+...     if my_snp in feature:
+...         print feature.type, feature.qualifiers.get('db_xref')
+...
+source ['taxon:229193']
+gene ['GeneID:2767712']
+CDS ['GI:45478716', 'GeneID:2767712']
+\end{verbatim}
+
+Note that gene and CDS features from GenBank or EMBL files defined with joins
+are the union of the exons -- they do not cover any introns.
+
 \section{References}
 
 Another common annotation related to a sequence is a reference to a journal or other published work dealing with the sequence. We have a fairly simple way of representing a Reference in Biopython -- we have a \verb|Bio.SeqFeature.Reference| class that stores the relevant information about a reference as attributes of an object.
@@ -2130,7 +2191,7 @@ print second_record.id
 print second_record.description
 \end{verbatim}
 
-Note that if you try and use \verb|.next()| and there are no more results, you'll either get back the special Python object \verb|None| or a \verb|StopIteration| exception.
+Note that if you try and use \verb|.next()| and there are no more results, you'll get the special \verb|StopIteration| exception.
 
 One special case to consider is when your sequence files have multiple records, but you only want the first one.  In this situation the following code is very concise:
 

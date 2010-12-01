@@ -3,34 +3,80 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
 """Command line wrapper for the multiple alignment programme MAFFT.
-
-http://align.bmr.kyushu-u.ac.jp/mafft/software/
-
-Citations:
-
-Katoh, Toh (BMC Bioinformatics 9:212, 2008) Improved accuracy of
-multiple ncRNA alignment by incorporating structural information into a
-MAFFT-based framework (describes RNA structural alignment methods)
-
-Katoh, Toh (Briefings in Bioinformatics 9:286-298, 2008) Recent developments in
-the MAFFT multiple sequence alignment program (outlines version 6)
-Katoh, Toh (Bioinformatics 23:372-374, 2007)  Errata PartTree: an algorithm to
-build an approximate tree from a large number of unaligned sequences (describes
-the PartTree algorithm)
-
-Katoh, Kuma, Toh, Miyata (Nucleic Acids Res. 33:511-518, 2005) MAFFT version 5:
-improvement in accuracy of multiple sequence alignment (describes [ancestral
-versions of] the G-INS-i, L-INS-i and E-INS-i strategies) Katoh, Misawa, Kuma,
-Miyata (Nucleic Acids Res. 30:3059-3066, 2002)
-
-Last checked against version: 6.626b (2009/03/16)
 """
+
+#TODO - Remove file exist checks? Other wrappers don't do this, and
+#it prevent things like preparing commands to run on a cluster.
 
 import os
 from Bio.Application import _Option, _Switch, _Argument, AbstractCommandline
 
 class MafftCommandline(AbstractCommandline):
-    """Command line wrapper for the multiple alignment program MAFFT."""
+    """Command line wrapper for the multiple alignment program MAFFT.
+
+    http://align.bmr.kyushu-u.ac.jp/mafft/software/
+
+    Example:
+
+    >>> from Bio.Align.Applications import MafftCommandline
+    >>> mafft_exe = "/opt/local/mafft"
+    >>> in_file = "../Doc/examples/opuntia.fasta"
+    >>> mafft_cline = MafftCommandline(mafft_exe, input=in_file)
+    >>> print mafft_cline
+    /opt/local/mafft ../Doc/examples/opuntia.fasta
+
+    If the mafft binary is on the path (typically the case on a Unix style
+    operating system) then you don't need to supply the executable location:
+
+    >>> from Bio.Align.Applications import MafftCommandline
+    >>> in_file = "../Doc/examples/opuntia.fasta"
+    >>> mafft_cline = MafftCommandline(input=in_file)
+    >>> print mafft_cline
+    mafft ../Doc/examples/opuntia.fasta
+
+    You would typically run the command line with mafft_cline() or via
+    the Python subprocess module, as described in the Biopython tutorial.
+    Note that MAFFT will write the alignment to stdout, which you may
+    want to save to a file and then parse, e.g.
+
+    stdout, stderr = mafft_cline()
+    handle = open("aligned.fasta", "w")
+    handle.write(stdout)
+    handle.close()
+    from Bio import AlignIO
+    align = AlignIO.read("aligned.fasta", "fasta")
+
+    Alternatively, to parse the output with AlignIO directly you can
+    use StringIO to turn the string into a handle:
+
+    stdout, stderr = mafft_cline()
+    from StringIO import StringIO
+    from Bio import AlignIO
+    align = AlignIO.read(StringIO(stdout), "fasta")
+
+    Citations:
+
+    Katoh, Toh (BMC Bioinformatics 9:212, 2008) Improved accuracy of
+    multiple ncRNA alignment by incorporating structural information into
+    a MAFFT-based framework (describes RNA structural alignment methods)
+
+    Katoh, Toh (Briefings in Bioinformatics 9:286-298, 2008) Recent
+    developments in the MAFFT multiple sequence alignment program
+    (outlines version 6)
+
+    Katoh, Toh (Bioinformatics 23:372-374, 2007)  Errata PartTree: an
+    algorithm to build an approximate tree from a large number of
+    unaligned sequences (describes the PartTree algorithm)
+
+    Katoh, Kuma, Toh, Miyata (Nucleic Acids Res. 33:511-518, 2005) MAFFT
+    version 5: improvement in accuracy of multiple sequence alignment
+    (describes [ancestral versions of] the G-INS-i, L-INS-i and E-INS-i
+    strategies)
+
+    Katoh, Misawa, Kuma, Miyata (Nucleic Acids Res. 30:3059-3066, 2002)
+
+    Last checked against version: MAFFT v6.717b (2009/12/03)
+    """
     def __init__(self, cmd="mafft", **kwargs):
         BLOSUM_MATRICES = ["30","45","62","80"]
         self.parameters = \
@@ -221,38 +267,42 @@ class MafftCommandline(AbstractCommandline):
             #input. Default: BLOSUM62
             _Option(["--aamatrix", "aamatrix"], ["input"],
                     os.path.exists, 0,
-                    "Use a user-defined AA scoring matrix. " + \
+                    "Use a user-defined AA scoring matrix. "
                     "Default: BLOSUM62",
                     0),
             #Incorporate the AA/nuc composition information into the scoring
             #matrix. Default: off
             _Switch(["--fmodel", "fmodel"], ["input"],
-                    "Incorporate the AA/nuc composition information " + \
-                    "into the scoring matrix. Default: off"),
+                    "Incorporate the AA/nuc composition information into"
+                    "the scoring matrix (True) or not (False, default)"),
             #**** Output ****
             #Output format: clustal format. Default: off (fasta format)
             _Switch(["--clustalout", "clustalout"], ["input"],
-                    "Output format: clustal format. Default: off (fasta" + \
-                    "format)"),
+                    "Output format: clustal (True) or fasta (False, default)"),
             #Output order: same as input. Default: on
             _Switch(["--inputorder", "inputorder"], ["input"],
-                    "Output order: same as input. Default: on"),
+                    "Output order: same as input (True, default) or alignment "
+                    "based (False)"),
             #Output order: aligned. Default: off (inputorder)
             _Switch(["--reorder", "reorder"], ["input"],
-                    "Output order: aligned. Default: off (inputorder)"),
+                    "Output order: aligned (True) or in input order (False, "
+                    "default)"),
             #Guide tree is output to the input.tree file. Default: off
             _Switch(["--treeout", "treeout"], ["input"],
-                    "Guide tree is output to the input.tree file. Default: off"),
+                    "Guide tree is output to the input.tree file (True) or "
+                    "not (False, default)"),
             #Do not report progress. Default: off
             _Switch(["--quiet", "quiet"], ["input"],
-                    "Do not report progress. Default: off"),
+                    "Do not report progress (True) or not (False, default)."),
             #**** Input ****
             #Assume the sequences are nucleotide. Deafult: auto
             _Switch(["--nuc", "nuc"], ["input"],
-                    "Assume the sequences are nucleotide. Default: auto"),
+                    "Assume the sequences are nucleotide (True/False). "
+                    "Default: auto"),
             #Assume the sequences are amino acid. Deafult: auto
             _Switch(["--amino", "amino"], ["input"],
-                    "Assume the sequences are amino acid. Default: auto"),
+                    "Assume the sequences are amino acid (True/False). "
+                    "Default: auto"),
             ###################### SEEDS #####################################
             # MAFFT has multiple --seed commands where the unaligned input is
             # aligned to the seed alignment. There can be multiple seeds in the

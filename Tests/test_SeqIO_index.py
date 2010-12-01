@@ -92,10 +92,9 @@ class IndexDictTests(unittest.TestCase):
 
     def get_raw_check(self, filename, format, alphabet):
         if format in SeqIO._BinaryFormats:
-            #This means SFF at the moment, which does not get
-            #implement the get_raw method
-            return
-        handle = open(filename, "rU")
+            handle = open(filename, "rb")
+        else:
+            handle = open(filename, "rU")
         raw_file = handle.read()
         handle.close()
         #Also checking the key_function here
@@ -112,12 +111,38 @@ class IndexDictTests(unittest.TestCase):
             raw = rec_dict.get_raw(key)
             self.assertTrue(raw.strip())
             self.assertTrue(raw in raw_file)
-            if format in ["ig", "uniprot-xml"]:
-               #These have a header structure and can't be parsed
-               #individually (at least, not right now).
-               continue
             rec1 = rec_dict[key]
-            rec2 = SeqIO.read(StringIO(raw), format, alphabet)
+            #Following isn't very elegant, but it lets me test the
+            #__getitem__ SFF code is working.
+            #TODO - Fix use of StringIO for Python 3 compatibility
+            if format == "sff":
+                rec2 = SeqIO.SffIO._sff_read_seq_record(StringIO(raw),
+                            rec_dict._flows_per_read,
+                            rec_dict._flow_chars,
+                            rec_dict._key_sequence,
+                            rec_dict._alphabet,
+                            trim=False)
+            elif format == "sff-trim":
+                rec2 = SeqIO.SffIO._sff_read_seq_record(StringIO(raw),
+                            rec_dict._flows_per_read,
+                            rec_dict._flow_chars,
+                            rec_dict._key_sequence,
+                            rec_dict._alphabet,
+                            trim=True)
+            elif format == "uniprot-xml":
+                #Currently the __getitem__ method uses this
+                #trick too, but we hope to fix that later
+                raw = """<?xml version='1.0' encoding='UTF-8'?>
+                <uniprot xmlns="http://uniprot.org/uniprot"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://uniprot.org/uniprot
+                http://www.uniprot.org/support/docs/uniprot.xsd">
+                %s
+                </uniprot>
+                """ % raw
+                rec2 = SeqIO.read(StringIO(raw), format, alphabet)
+            else:
+                rec2 = SeqIO.read(StringIO(raw), format, alphabet)
             self.assertEqual(True, compare_record(rec1, rec2))
 
     def test_duplicates_index(self):
@@ -199,9 +224,6 @@ for filename, format, alphabet in tests:
             % (filename.replace("/","_").replace(".","_"), format),
             funct(filename, format, alphabet))
     del funct
-
-    if format in SeqIO._BinaryFormats:
-        continue
 
     def funct(fn,fmt,alpha):
         f = lambda x : x.get_raw_check(fn, fmt, alpha)

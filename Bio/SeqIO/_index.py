@@ -239,6 +239,11 @@ class SffDict(_IndexedSeqFileDict) :
                                                 self._key_sequence,
                                                 self._alphabet)
 
+    def get_raw(self, key):
+        handle = self._handle
+        handle.seek(dict.__getitem__(self, key))
+        return SeqIO.SffIO._sff_read_raw_record(handle, self._flows_per_read)
+
 
 class SffTrimmedDict(SffDict) :
     def __getitem__(self, key) :
@@ -531,6 +536,20 @@ class IntelliGeneticsDict(SequentialSeqFileDict):
             elif not line:
                 #End of file
                 break
+
+    def get_raw(self, key):
+        """Like the get method, but returns the record as a raw string."""
+        handle = self._handle
+        handle.seek(dict.__getitem__(self, key))
+        lines = []
+        line = handle.readline()
+        while line.startswith(";"):
+            lines.append(line)
+            line = handle.readline()
+        while line and not line.startswith(";"):
+            lines.append(line)
+            line = handle.readline()
+        return "".join(lines)
 
 
 class TabDict(SequentialSeqFileDict):

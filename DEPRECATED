@@ -14,15 +14,17 @@ This means we will continue to support Python 2.4 for at least two further
 releases, and at least one year (whichever takes longer), before dropping
 support for Python 2.4. This can be delayed given feedback from our users
 (e.g. if this proves to be a problem in combination with other libraries).
-An explicit warning was added to setup.py for Biopython 1.55.
+An explicit warning was added to setup.py for Biopython 1.55 and 1.56.
 
 Bio.Encodings
 =============
-Explicitly declared obsolete in Release 1.55, and deprecated in Release 1.56.
+Explicitly declared obsolete in Release 1.55, deprecated in Release 1.56, and
+removed in Release 1.57.
 
 Bio.PropertyManager
 ===================
-Explicitly declared obsolete in Release 1.55, and deprecated in Release 1.56.
+Explicitly declared obsolete in Release 1.55, deprecated in Release 1.56, and
+removed in Release 1.57.
 
 Bio.InterPro
 ============
@@ -46,7 +48,7 @@ Bio.Restriction.DNAUtils and check_bases
 This module (originally in C) offered complement and antiparallel functions
 (duplicating functionality in Bio.Seq) and a rather odd function called
 check_bases (also available as Bio.Restriction.Restriction.check_bases).
-Deprecated in Release 1.53.
+Deprecated in Release 1.53, removed in Release 1.57.
 
 Bio.Blast.NCBIStandalone
 ========================
@@ -85,9 +87,10 @@ in Release 1.51, and removed in Release 1.55. Please use psycopg2 instead.
 
 Bio.Application.generic_run and ApplicationResult
 =================================================
-Declared obsolete in Release 1.51, and deprecated in Release 1.53.
-Please use the Python subprocess module instead, of as of Release 1.55 the
-application wrappers can be used directly to execute the command.
+Declared obsolete in Release 1.51, deprecated in Release 1.53, and removed in
+Release 1.57. Please use the Python subprocess module instead, or as of
+Release 1.55 the application wrappers can be used directly to execute the
+command.
 
 Bio.Entrez.efetch and rettype="genbank"
 =======================================
@@ -147,8 +150,8 @@ Release 1.55 final, accessing the .data property gives a DeprecationWarning.
 
 Bio.Transcribe and Bio.Translate
 ================================
-Declared obsolete in Release 1.49, deprecated in Release 1.51.
-Please use the methods or functions in Bio.Seq instead.
+Declared obsolete in Release 1.49, deprecated in Release 1.51, and removed
+in Release 1.57. Please use the methods or functions in Bio.Seq instead.
 
 Bio.mathfns, Bio.stringfns and Bio.listfns (and their C code variants)
 ==========================================
@@ -424,8 +427,8 @@ Bio.utils
 Functions 'translate', 'translate_to_stop', 'back_translate', 'transcribe',
 and 'back_transcribe' were deprecated in Release 1.49, and removed in Release
 1.53. Function 'ungap' was deprecated in Release 1.53. Use Bio.Seq instead.
-The whole of Bio.utils was declared obsolete in Release 1.55, and deprecated
-in Biopython 1.56.
+The whole of Bio.utils was declared obsolete in Release 1.55, deprecated in
+Release 1.56, and removed in Release 1.57.
 
 Bio.Motif
 =========
