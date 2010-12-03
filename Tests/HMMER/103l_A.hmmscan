@@ -1,0 +1,379 @@
+# hmmscan :: search sequence(s) against a profile HMM database
+# HMMER 3.0b2 (June 2009); http://hmmer.org/
+# Copyright (C) 2009 Howard Hughes Medical Institute.
+# Freely distributed under the GNU General Public License (GPLv3).
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# query sequence file:             tmp.seq
+# target HMM database:             /home/kellrott/data/pfam24/Pfam-A.hmm
+# set reporting thresholds to:     TC cutoffs
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query:       103l_A  [L=167]
+Description: mol:protein length:167  T4 LYSOZYME
+Scores for complete sequence (score includes all domains):
+   --- full sequence ---   --- best 1 domain ---    -#dom-
+    E-value  score  bias    E-value  score  bias    exp  N  Model           Description
+    ------- ------ -----    ------- ------ -----   ---- --  --------        -----------
+    2.5e-23   82.1   0.1    3.1e-23   81.8   0.0    1.1  1  Phage_lysozyme  Phage lysozyme
+  ------ inclusion threshold ------
+          2    8.4   0.0        9.1    6.2   0.0    1.9  2  BDM             Putative biofilm-dependent modulation protei
+        2.5    8.0   0.2         50    3.9   0.0    2.2  2  TonB            Gram-negative bacterial tonB protein
+        2.8    7.2   0.8        4.8    6.4   0.0    1.8  1  Phage_XkdX      Phage uncharacterised protein (Phage_XkdX)
+          3    7.2   0.0        4.2    6.7   0.0    1.2  1  Jun             Jun-like transcription factor
+        3.4    6.4   0.0          7    5.4   0.0    1.5  1  AnfO_nitrog     Iron only nitrogenase protein AnfO (AnfO_nit
+        5.4    6.0   1.0         20    4.1   0.2    2.0  2  DUF2937         Protein of unknown function (DUF2937)
+        5.5    6.4   0.0        9.9    5.5   0.0    1.4  1  L_biotic_typeA  Type-A lantibiotic
+        6.4    6.2   0.4         23    4.5   0.3    1.8  1  Malate_DH       Malate dehydrogenase enzyme
+        6.9    6.3   0.1         19    5.0   0.0    1.8  1  Pro_Al_protease Alpha-lytic protease prodomain
+        9.9    5.8   0.0         22    4.7   0.0    1.5  1  IGR             IGR protein motif
+         10    5.1   0.0         17    4.4   0.0    1.3  1  Nop52           Nucleolar protein,Nop52
+         11    4.9   0.0         23    3.8   0.0    1.4  1  C5-epim_C       D-glucuronyl C5-epimerase C-terminus
+         19    4.8   0.2         37    3.9   0.1    1.5  1  Minor_capsid    Minor capsid
+         19    4.6   0.4         40    3.6   0.1    1.7  1  Barwin          Barwin family
+         22    4.7   0.0         48    3.7   0.0    1.5  1  TAF             TATA box binding protein associated factor (
+         25    3.4   0.0         32    3.0   0.0    1.2  1  MtrH            Tetrahydromethanopterin S-methyltransferase 
+         31    3.8   0.0         56    3.0   0.0    1.4  1  DUF2368         Uncharacterised conserved protein (DUF2368)
+         34    3.3   0.4         59    2.5   0.1    1.4  1  DUF1624         Protein of unknown function (DUF1624)
+         63    3.2   0.0    1.3e+02    2.2   0.0    1.4  1  HS1_rep         Repeat in HS1/Cortactin
+         82    2.0   0.0    1.1e+02    1.5   0.0    1.2  1  BAR_3_WASP_bdg  WASP-binding domain of Sorting nexin protein
+    1.4e+02    2.1   0.0    2.5e+02    1.3   0.0    1.3  1  DUF3265         Protein of unknown function (DUF3265)
+      2e+02    1.9   0.0    2.9e+02    1.4   0.0    1.2  1  SPT2            SPT2 chromatin protein
+    5.9e+02    0.0   2.9    2.5e+02    1.2   0.1    1.8  1  DUF1586         Protein of unknown function (DUF1586)
+
+
+Domain and alignment annotation for each model:
+>> Phage_lysozyme  Phage lysozyme
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   81.8   0.0   6.2e-26   3.1e-23       1     109 [.      24     150 ..      24     151 .. 0.92
+
+  Alignments for each domain:
+  == domain 1    score: 81.8 bits;  conditional E-value: 6.2e-26
+                     -EEEETT...ESSSSCCHHHH....................-EHHHHHHHHHHHHHHHHHHHHHHTTT....HHSSHHHHHHHHHHHHHH--TTT CS
+  Phage_lysozyme   1 ywTigiG...qkgkdvsphkr....................itkseaagryqkdldtaerkikqyikg....kdleperqdalvslafnvGkgGk 68 
+                     y+TigiG   +     sp  +                    itk+ea++++++d+d+a+r+i +++k     ++l++ r+ al++++f++G++G+
+          103l_A  24 YYTIGIGhllT----KSPSLNsldaakseldkaigrntngvITKDEAEKLFNQDVDAAVRGILRNAKLkpvyDSLDAVRRAALINMVFQMGETGV 114
+                     9******5553....3333334555888******************************************************************* PP
+
+                     TTEHHHHHHHHTTCHHHHHHHGGGS.B...HHHHHHHHHHH CS
+  Phage_lysozyme  69 rkastllralnagqwkkacsaiwkslksgGkeynglkrrre 109
+                     +++++ lr+l++++w++a+ ++ ks     ++yn++ +r++
+          103l_A 115 AGFTNSLRMLQQKRWDEAAVNLAKS-----RWYNQTPNRAK 150
+                     *************************.....*********97 PP
+
+>> BDM  Putative biofilm-dependent modulation protein
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    0.2   0.0       1.4   7.1e+02      46      73 ..      55      82 ..      40      91 .. 0.76
+   2 ?    6.2   0.0     0.018       9.1      25      82 ..      90     147 ..      72     155 .. 0.78
+
+  Alignments for each domain:
+  == domain 1    score: 0.2 bits;  conditional E-value: 1.4
+     BDM 46 raehgvvteddilmeltkwveasdndil 73
+            r   gv+t+d+    + + v+a+   il
+  103l_A 55 RNTNGVITKDEAEKLFNQDVDAAVRGIL 82
+            6778999999987777777777776666 PP
+
+  == domain 2    score: 6.2 bits;  conditional E-value: 0.018
+     BDM  25 yyqaenstaepalvnaieqglraehgvvteddilmeltkwveasdndilsdiyqqtin 82 
+              y++ ++    al+n + q   +     t+   +++  +w ea+ n   s  y+qt n
+  103l_A  90 VYDSLDAVRRAALINMVFQMGETGVAGFTNSLRMLQQKRWDEAAVNLAKSRWYNQTPN 147
+             577777788899999999865544444577777788899****************987 PP
+
+>> TonB  Gram-negative bacterial tonB protein
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.9   0.0       0.1        50      44      78 ..      74     108 ..      55     109 .. 0.79
+   2 ?    2.3   0.0      0.31   1.5e+02      42      65 ..     127     150 ..     105     158 .. 0.60
+
+  Alignments for each domain:
+  == domain 1    score: 3.9 bits;  conditional E-value: 0.1
+             SHHHHHHHHTT-EE--------......EEEEEEE CS
+    TonB  44 LdkaAleavrkwrfppapkngkpvevkvtvpirFk 78 
+              d+a+  ++r+++++p ++  ++v+  + +++ F+
+  103l_A  74 VDAAVRGILRNAKLKPVYDSLDAVRRAALINMVFQ 108
+             57888889999******999999999887777775 PP
+
+  == domain 2    score: 2.3 bits;  conditional E-value: 0.31
+             SCSHHHHHHHHTT-EE-------- CS
+    TonB  42 eiLdkaAleavrkwrfppapkngk 65 
+             ++ d+aA++ +++  ++ +p++ k
+  103l_A 127 KRWDEAAVNLAKSRWYNQTPNRAK 150
+             345889999998833444444333 PP
+
+>> Phage_XkdX  Phage uncharacterised protein (Phage_XkdX)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    6.4   0.0    0.0097       4.8      24      36 ..      58      70 ..      57      74 .. 0.83
+
+  Alignments for each domain:
+  == domain 1    score: 6.4 bits;  conditional E-value: 0.0097
+  Phage_XkdX 24 vgwITeEeYkeIt 36
+                 g+IT++e+++ +
+      103l_A 58 NGVITKDEAEKLF 70
+                699*******976 PP
+
+>> Jun  Jun-like transcription factor
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    6.7   0.0    0.0085       4.2      68      97 ..      33      63 ..      11      74 .. 0.86
+
+  Alignments for each domain:
+  == domain 1    score: 6.7 bits;  conditional E-value: 0.0085
+     Jun 68 llaspdlgllklaspeLErLIiqs.Nglvtt 97
+            l +sp l +l  a  eL++ I ++ Ng++t+
+  103l_A 33 LTKSPSLNSLDAAKSELDKAIGRNtNGVITK 63
+            5689*****************9999**9975 PP
+
+>> AnfO_nitrog  Iron only nitrogenase protein AnfO (AnfO_nitrog)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    5.4   0.0     0.014         7     130     155 ..      19      44 ..      12      53 .. 0.86
+
+  Alignments for each domain:
+  == domain 1    score: 5.4 bits;  conditional E-value: 0.014
+  AnfO_nitrog 130 elgeGryrldlkeilkknpelnSkqv 155
+                  + +eG+y++ + ++l k+p+lnS ++
+       103l_A  19 KDTEGYYTIGIGHLLTKSPSLNSLDA 44 
+                  5679******************9765 PP
+
+>> DUF2937  Protein of unknown function (DUF2937)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    0.5   0.0      0.53   2.6e+02      47      67 ..      63      83 ..      41      88 .. 0.85
+   2 ?    4.1   0.2      0.04        20      86     126 ..     125     165 ..      92     167 .] 0.84
+
+  Alignments for each domain:
+  == domain 1    score: 0.5 bits;  conditional E-value: 0.53
+  DUF2937 47 qatAkaffggdlealiahyrq 67
+             +++A++ f+ d++a+++   +
+   103l_A 63 KDEAEKLFNQDVDAAVRGILR 83
+             568999*******99987655 PP
+
+  == domain 2    score: 4.1 bits;  conditional E-value: 0.04
+  DUF2937  86 RyaaLesalaalaqaspferllvllraadreiaeetwsafe 126
+              ++++ ++a  +la++ +++++ + +++  ++ +  tw+a++
+   103l_A 125 QQKRWDEAAVNLAKSRWYNQTPNRAKRVITTFRTGTWDAYK 165
+              4566678889999***************************7 PP
+
+>> L_biotic_typeA  Type-A lantibiotic
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    5.5   0.0      0.02       9.9      17      32 ..      46      61 ..      34      63 .. 0.81
+
+  Alignments for each domain:
+  == domain 1    score: 5.5 bits;  conditional E-value: 0.02
+  L_biotic_typeA 17 eeELdqilGGkgsgvi 32
+                     +ELd+ +G + +gvi
+          103l_A 46 KSELDKAIGRNTNGVI 61
+                    68************98 PP
+
+>> Malate_DH  Malate dehydrogenase enzyme
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    4.5   0.3     0.046        23      16      22 ..      96     102 ..      93     102 .. 0.92
+
+  Alignments for each domain:
+  == domain 1    score: 4.5 bits;  conditional E-value: 0.046
+  Malate_DH  16 ALRkAAL 22 
+                A+R+AAL
+     103l_A  96 AVRRAAL 102
+                9*****9 PP
+
+>> Pro_Al_protease  Alpha-lytic protease prodomain
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    5.0   0.0     0.038        19       2      15 ..      38      50 ..      37      61 .. 0.78
+
+  Alignments for each domain:
+  == domain 1    score: 5.0 bits;  conditional E-value: 0.038
+  Pro_Al_protease  2 slaqLeaakdaLdd 15
+                     sl+ L+aak+ L d
+           103l_A 38 SLNSLDAAKSEL-D 50
+                     89**********.6 PP
+
+>> IGR  IGR protein motif
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    4.7   0.0     0.044        22       6      29 ..      51      72 ..      47      76 .. 0.87
+
+  Alignments for each domain:
+  == domain 1    score: 4.7 bits;  conditional E-value: 0.044
+     IGR  6 kkIGRgcsehadkfeskwekLfet 29
+            k IGR+++  ++k e   ekLf+ 
+  103l_A 51 KAIGRNTNGVITKDEA--EKLFNQ 72
+            68***********998..999975 PP
+
+>> Nop52  Nucleolar protein,Nop52
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    4.4   0.0     0.034        17     116     149 ..     119     152 ..     116     165 .. 0.83
+
+  Alignments for each domain:
+  == domain 1    score: 4.4 bits;  conditional E-value: 0.034
+   Nop52 116 ealkllkeekwdkelvkklleillekilleedkv 149
+             ++l++l+++ wd+ +v+   + + +++ +  ++v
+  103l_A 119 NSLRMLQQKRWDEAAVNLAKSRWYNQTPNRAKRV 152
+             789**************99999999888877764 PP
+
+>> C5-epim_C  D-glucuronyl C5-epimerase C-terminus
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.8   0.0     0.046        23     100     143 ..     120     165 ..     114     166 .. 0.78
+
+  Alignments for each domain:
+  == domain 1    score: 3.8 bits;  conditional E-value: 0.046
+  C5-epim_C 100 sllgLydls..takkseeakelfkkglkslkamlplydtgswsaYd 143
+                sl  L++    +a+ +   ++ ++++ +  k+++  + tg w aY+
+     103l_A 120 SLRMLQQKRwdEAAVNLAKSRWYNQTPNRAKRVITTFRTGTWDAYK 165
+                5555544333388888889999**********************96 PP
+
+>> Minor_capsid  Minor capsid
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.9   0.1     0.074        37      89     105 ..     127     143 ..     117     152 .. 0.89
+
+  Alignments for each domain:
+  == domain 1    score: 3.9 bits;  conditional E-value: 0.074
+  Minor_capsid  89 kRWDlkakavfvsdWek 105
+                   kRWD  a ++ +s W +
+        103l_A 127 KRWDEAAVNLAKSRWYN 143
+                   9************9975 PP
+
+>> Barwin  Barwin family
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.6   0.1      0.08        40      14      40 ..     124     150 ..     115     166 .. 0.80
+
+  Alignments for each domain:
+  == domain 1    score: 3.6 bits;  conditional E-value: 0.08
+             -GGGTT---TT--TTHHHHTTS-CHHH CS
+  Barwin  14 paqnnydlnaasaycatwdadkplswr 40 
+              +q+ +d  a+ ++ + w ++ p + +
+  103l_A 124 LQQKRWDEAAVNLAKSRWYNQTPNRAK 150
+             58999*************999987654 PP
+
+>> TAF  TATA box binding protein associated factor (TAF)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.7   0.0     0.096        48      22      44 ..      63      85 ..      57      88 .. 0.84
+
+  Alignments for each domain:
+  == domain 1    score: 3.7 bits;  conditional E-value: 0.096
+            -HHHHHHHHHHHHHHHHHHHHHH CS
+     TAF 22 sdeaaalLaedveyrlkeivqea 44
+            +dea +l  +dv   ++ i ++a
+  103l_A 63 KDEAEKLFNQDVDAAVRGILRNA 85
+            58888999999999999999887 PP
+
+>> MtrH  Tetrahydromethanopterin S-methyltransferase MtrH subunit
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.0   0.0     0.064        32      38      59 ..      55      76 ..      46     107 .. 0.74
+
+  Alignments for each domain:
+  == domain 1    score: 3.0 bits;  conditional E-value: 0.064
+    MtrH 38 dekkGifdreaaeelikkqeel 59
+             +++G+  +++ae+l+++ ++ 
+  103l_A 55 RNTNGVITKDEAEKLFNQDVDA 76
+            4456666677777776666554 PP
+
+>> DUF2368  Uncharacterised conserved protein (DUF2368)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    3.0   0.0      0.11        56      24      47 ..     117     140 ..     107     153 .. 0.91
+
+  Alignments for each domain:
+  == domain 1    score: 3.0 bits;  conditional E-value: 0.11
+  DUF2368  24 lerqlqlqnkqrerqmAlqiaesr 47 
+              + + l + +++r  ++A+++a+sr
+   103l_A 117 FTNSLRMLQQKRWDEAAVNLAKSR 140
+              568899****************98 PP
+
+>> DUF1624  Protein of unknown function (DUF1624)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    2.5   0.1      0.12        59       2      18 ..      91     107 ..      91     110 .. 0.91
+
+  Alignments for each domain:
+  == domain 1    score: 2.5 bits;  conditional E-value: 0.12
+  DUF1624   2 ieeiDalRGiAlilMii 18 
+              ++++Da+R  Ali M++
+   103l_A  91 YDSLDAVRRAALINMVF 107
+              578************96 PP
+
+>> HS1_rep  Repeat in HS1/Cortactin
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    2.2   0.0      0.26   1.3e+02       9      18 ..     125     134 ..     124     135 .. 0.92
+
+  Alignments for each domain:
+  == domain 1    score: 2.2 bits;  conditional E-value: 0.26
+  HS1_rep   9 qkdrqDkSAV 18 
+              q+ r+D++AV
+   103l_A 125 QQKRWDEAAV 134
+              899******9 PP
+
+>> BAR_3_WASP_bdg  WASP-binding domain of Sorting nexin protein
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    1.5   0.0      0.22   1.1e+02      11      50 ..      46      85 ..      42     114 .. 0.84
+
+  Alignments for each domain:
+  == domain 1    score: 1.5 bits;  conditional E-value: 0.22
+  BAR_3_WASP_bdg 11 kaekDelvGaaflltievpeaeelDlqeveqkveafkkft 50
+                    k+e D  +G +    i+  eae+l  q+v+  v ++ + +
+          103l_A 46 KSELDKAIGRNTNGVITKDEAEKLFNQDVDAAVRGILRNA 85
+                    789999*****99999999999**9****99988765554 PP
+
+>> DUF3265  Protein of unknown function (DUF3265)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    1.3   0.0      0.51   2.5e+02      17      27 ..     108     118 ..     108     118 .. 0.91
+
+  Alignments for each domain:
+  == domain 1    score: 1.3 bits;  conditional E-value: 0.51
+  DUF3265  17 gcrkfgiallt 27 
+              ++++ g+a++t
+   103l_A 108 QMGETGVAGFT 118
+              69999*****8 PP
+
+>> SPT2  SPT2 chromatin protein
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    1.4   0.0      0.58   2.9e+02      27      66 ..      56      95 ..      33     106 .. 0.72
+
+  Alignments for each domain:
+  == domain 1    score: 1.4 bits;  conditional E-value: 0.58
+    SPT2 27 dlddfiedddeeedevpydsdeiweifnkgkkrsyykryD 66
+            + +  i  d+ e+   +++   ++ i+++ k + +y++ D
+  103l_A 56 NTNGVITKDEAEKLFNQDVDAAVRGILRNAKLKPVYDSLD 95
+            4555666666666666788889999999999999988766 PP
+
+>> DUF1586  Protein of unknown function (DUF1586)
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 ?    1.2   0.1       0.5   2.5e+02       9      15 ..     143     149 ..     142     150 .. 0.92
+
+  Alignments for each domain:
+  == domain 1    score: 1.2 bits;  conditional E-value: 0.5
+  DUF1586   9 sqtPTgA 15 
+              +qtP +A
+   103l_A 143 NQTPNRA 149
+              9***999 PP
+
+
+
+Internal pipeline statistics summary:
+-------------------------------------
+Query sequence(s):                         1  (167 residues)
+Target model(s):                       11912  (2158902 nodes)
+Passed MSV filter:                       425  (0.0356783); expected 238.2 (0.02)
+Passed bias filter:                      379  (0.0318167); expected 238.2 (0.02)
+Passed Vit filter:                        24  (0.00201478); expected 11.9 (0.001)
+Passed Fwd filter:                        24  (0.00201478); expected 0.1 (1e-05)
+Initial search space (Z):              11912  [actual number of targets]
+Domain search space  (domZ):              24  [number of targets reported over threshold]
+# CPU time: 0.32u 0.07s 00:00:00.39 Elapsed: 00:00:00
+# Mc/sec: 1126.68
+//
