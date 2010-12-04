@@ -32,6 +32,7 @@ import Bio.Seq
 import Bio.SeqRecord
 from uuid import uuid4
 import types
+from Bio.AlignIO.Interfaces import AlignmentIterator
 
 def parse( fh, type="hmmer3" ):
     if type=="hmmer3":
@@ -887,3 +888,7 @@ class HMMUnit(HMMMatch):
                     1, #int(unit.sig), 
                     "" )
         return outStr
+
+
+
+

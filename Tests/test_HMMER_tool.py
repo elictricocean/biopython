@@ -13,8 +13,10 @@ import sys
 import os
 import unittest
 import subprocess
+from StringIO import StringIO
 from Bio import MissingExternalDependencyError
-from Bio.HMMER.Applications import HmmScanCommandline, HmmPressCommandline
+from Bio import AlignIO
+from Bio.HMMER.Applications import HmmScanCommandline, HmmPressCommandline, HmmAlignCommandline
 
 hmmscan_exe=None
 if sys.platform=="win32":
@@ -33,7 +35,7 @@ if not hmmscan_exe:
 class HmmScanApplication(unittest.TestCase):
 
     def setUp(self):
-        self.infile1 = "Fasta/f002"
+        self.infile1 = "HMMER/Q8A1G2.faa"
         self.hmmfile = "HMMER/PF07980.hmm"
         cmdline = HmmPressCommandline(hmm=self.hmmfile, force=True)
         self.assertEqual(str(eval(repr(cmdline))), str(cmdline))
@@ -62,7 +64,27 @@ class HmmScanApplication(unittest.TestCase):
                                  stderr=subprocess.PIPE,
                                  universal_newlines=True,
                                  shell=(sys.platform!="win32"))
-        stdoutdata, stderrdata = child.communicate()    
+        stdoutdata, stderrdata = child.communicate()
+        alignout = AlignIO.parse( StringIO( stdoutdata ), "hmmer3" )
+        align = list( alignout )
+        print align
+        for seq in align[0]:
+            print seq
+        
+    def test_hmmalign(self):
+        cmdline = HmmAlignCommandline(hmm=self.hmmfile, input=self.infile1)
+        self.assertEqual(str(eval(repr(cmdline))), str(cmdline))
+        child = subprocess.Popen(str(cmdline),
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 universal_newlines=True,
+                                 shell=(sys.platform!="win32"))
+        stdoutdata, stderrdata = child.communicate()
+        alignout = AlignIO.parse( StringIO( stdoutdata ), "stockholm" )
+        align = list( alignout )
+        assert len(align)==1
+        assert align[0][0].letter_annotations.has_key( "posterior_probability" )
+            
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity = 2)
