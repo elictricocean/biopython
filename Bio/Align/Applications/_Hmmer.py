@@ -1,3 +1,7 @@
+# Copyright 2010 by Kyle Ellrott.  All rights reserved.
+# This code is part of the Biopython distribution and governed by its
+# license.  Please see the LICENSE file that should have been included
+# as part of this package.
 
 from Bio.Application import _Option, AbstractCommandline, _Switch, _Argument
 import os
