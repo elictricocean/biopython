@@ -10,3 +10,4 @@ from _Mafft import MafftCommandline
 from _Dialign import DialignCommandline
 from _Probcons import ProbconsCommandline
 from _TCoffee import TCoffeeCommandline
+from _Hmmer import HmmScanCommandline, HmmAlignCommandline, HmmPressCommandline

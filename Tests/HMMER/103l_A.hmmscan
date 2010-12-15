@@ -1,0 +1,52 @@
+# hmmscan :: search sequence(s) against a profile database
+# HMMER 3.0 (March 2010); http://hmmer.org/
+# Copyright (C) 2010 Howard Hughes Medical Institute.
+# Freely distributed under the GNU General Public License (GPLv3).
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# query sequence file:             ./HMMER/103l_A.faa
+# target HMM database:             /home/kellrott/data/pfam24/Pfam-A.hmm
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query:       103L:A|PDBID|CHAIN|SEQUENCE  [L=167]
+Scores for complete sequence (score includes all domains):
+   --- full sequence ---   --- best 1 domain ---    -#dom-
+    E-value  score  bias    E-value  score  bias    exp  N  Model          Description
+    ------- ------ -----    ------- ------ -----   ---- --  --------       -----------
+    2.5e-23   82.1   0.1    3.1e-23   81.8   0.0    1.1  1  Phage_lysozyme Phage lysozyme
+
+
+Domain annotation for each model (and alignments):
+>> Phage_lysozyme  Phage lysozyme
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   81.8   0.0   2.6e-27   3.1e-23       1     109 [.      24     150 ..      24     151 .. 0.92
+
+  Alignments for each domain:
+  == domain 1    score: 81.8 bits;  conditional E-value: 2.6e-27
+                                  -EEEETT...ESSSSCCHHHH....................-EHHHHHHHHHHHHHHHHHHHHHHTTT....HHSSHHHHHH CS
+               Phage_lysozyme   1 ywTigiG...qkgkdvsphkr....................itkseaagryqkdldtaerkikqyikg....kdleperqda 55 
+                                  y+TigiG   +     sp  +                    itk+ea++++++d+d+a+r+i +++k     ++l++ r+ a
+  103L:A|PDBID|CHAIN|SEQUENCE  24 YYTIGIGhllT----KSPSLNsldaakseldkaigrntngvITKDEAEKLFNQDVDAAVRGILRNAKLkpvyDSLDAVRRAA 101
+                                  9******5553....3333334555888****************************************************** PP
+
+                                  HHHHHHHH--TTTTTEHHHHHHHHTTCHHHHHHHGGGS.B...HHHHHHHHHHH CS
+               Phage_lysozyme  56 lvslafnvGkgGkrkastllralnagqwkkacsaiwkslksgGkeynglkrrre 109
+                                  l++++f++G++G++++++ lr+l++++w++a+ ++ ks     ++yn++ +r++
+  103L:A|PDBID|CHAIN|SEQUENCE 102 LINMVFQMGETGVAGFTNSLRMLQQKRWDEAAVNLAKS-----RWYNQTPNRAK 150
+                                  **************************************.....*********97 PP
+
+
+
+Internal pipeline statistics summary:
+-------------------------------------
+Query sequence(s):                         1  (167 residues)
+Target model(s):                       11912  (2158902 nodes)
+Passed MSV filter:                       425  (0.0356783); expected 238.2 (0.02)
+Passed bias filter:                      379  (0.0318167); expected 238.2 (0.02)
+Passed Vit filter:                        20  (0.00167898); expected 11.9 (0.001)
+Passed Fwd filter:                         1  (8.3949e-05); expected 0.1 (1e-05)
+Initial search space (Z):              11912  [actual number of targets]
+Domain search space  (domZ):               1  [number of targets reported over threshold]
+# CPU time: 0.34u 0.15s 00:00:00.49 Elapsed: 00:00:00.53
+# Mc/sec: 680.26
+//

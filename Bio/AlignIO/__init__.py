@@ -109,6 +109,7 @@ names are also used in Bio.SeqIO and include the following:
                read any phylogenetic trees in these files.
  - phylip    - Used by the PHLIP tools.
  - stockholm - A richly annotated alignment file format used by PFAM.
+ - hmmer3    - Output from the HMMER3 program
 
 Note that while Bio.AlignIO can read all the above file formats, it cannot
 write to all of them.
@@ -147,6 +148,7 @@ import NexusIO
 import PhylipIO
 import EmbossIO
 import FastaIO
+import HmmerIO
 
 #Convention for format names is "mainname-subtype" in lower case.
 #Please use the same names as BioPerl and EMBOSS where possible.
@@ -158,6 +160,7 @@ _FormatToIterator = {#"fasta" is done via Bio.SeqIO
                      "nexus" : NexusIO.NexusIterator,
                      "phylip" : PhylipIO.PhylipIterator,
                      "stockholm" : StockholmIO.StockholmIterator,
+                     "hmmer3" : HmmerIO.HMMER3Iterator,
                      }
 
 _FormatToWriter = {#"fasta" is done via Bio.SeqIO

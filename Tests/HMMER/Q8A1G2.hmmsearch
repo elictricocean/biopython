@@ -1,0 +1,60 @@
+# hmmsearch :: search profile(s) against a sequence database
+# HMMER 3.0 (March 2010); http://hmmer.org/
+# Copyright (C) 2010 Howard Hughes Medical Institute.
+# Freely distributed under the GNU General Public License (GPLv3).
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# query HMM file:                  PF07980.hmm
+# target sequence database:        Q8A1G2.faa
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query:       SEED  [M=266]
+Scores for complete sequences (score includes all domains):
+   --- full sequence ---   --- best 1 domain ---    -#dom-
+    E-value  score  bias    E-value  score  bias    exp  N  Sequence               Description
+    ------- ------ -----    ------- ------ -----   ---- --  --------               -----------
+    1.3e-37  116.1   0.6    2.1e-37  115.3   0.4    1.4  1  tr|Q8A1G2|Q8A1G2_BACTN SusD OS=Bacteroides thetaiotaomicron 
+
+
+Domain annotation for each sequence (and alignments):
+>> tr|Q8A1G2|Q8A1G2_BACTN  SusD OS=Bacteroides thetaiotaomicron GN=SusD PE=1 SV=1
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  115.3   0.4   2.1e-37   2.1e-37       2     266 .]     281     550 ..     280     550 .. 0.91
+
+  Alignments for each domain:
+  == domain 1    score: 115.3 bits;  conditional E-value: 2.1e-37
+                    SEED   2 Evifavqytsgstggggnsfgsnsnpags....asggggwgnvsptqylvdlf........................knvkkedenr 60 
+                             E+i+ +  +  +t ++g+s++  +++++      +  +gw+++ + + +v+ f                         +    d++ 
+  tr|Q8A1G2|Q8A1G2_BACTN 281 EIILPIRQDGVKTRNYGGSTYLVCGTRVAgmprMGTTNGWSCIFARAAMVQKFfsnledvpmlpadveiptkgldtdEQIDAFDAEH 367
+                             99**9**9999****************************************************************998888889999 PP
+
+                    SEED  61 DpRldatiltpggtnennekeqeggqtssetaggssngnssktgyalrKfvd...adsasanggnsgidyplmRyAevlLmyAEAln 144
+                               R +  i+  g++++      + g + + ++++++ +++   g+ + K+ +   ++++ +  ++ ++d+pl+R+Ae +L +AEA +
+  tr|Q8A1G2|Q8A1G2_BACTN 368 GIRTEDMIKAAGDDRA----LLYSGVGGGRRKIQTDAISGFTDGLSIVKWQNyrsDGKPVSHATYPDTDIPLFRLAEAYLTRAEAIF 450
+                             9999999999999999....888888889999********************999999999999999999***************** PP
+
+                    SEED 145 elgntaeAveylnkvReRAglpaltdaaakttkdalldaildERrrElagEgkRwfDlrRwkgalkelnklnn.geaaangnsdktk 230
+                             ++g++  A+ ++n++R+RA+ ++         ++ + +++ dE++rE+++Eg+R+ Dl+R +g++++ + l++ ++ a+ng+s +++
+  tr|Q8A1G2|Q8A1G2_BACTN 451 RQGGD--ATGDINELRKRANCTRKV-------QTVTEQELIDEWAREFYLEGRRRSDLVR-FGMFTTNKYLWDwKGGAMNGTSVASY 527
+                             ****9..89**************98.......88999***********************.66666666666515555666666665 PP
+
+                    SEED 231 keyeesaneesdnetllPIpqseidknpnltQNpGY 266
+                             ++              +PIp s+i+ n n+ QN+GY
+  tr|Q8A1G2|Q8A1G2_BACTN 528 YN-------------KYPIPVSDINNNRNMSQNEGY 550
+                             55.............69******************9 PP
+
+
+
+Internal pipeline statistics summary:
+-------------------------------------
+Query model(s):                            1  (266 nodes)
+Target sequences:                          1  (551 residues)
+Passed MSV filter:                         1  (1); expected 0.0 (0.02)
+Passed bias filter:                        1  (1); expected 0.0 (0.02)
+Passed Vit filter:                         1  (1); expected 0.0 (0.001)
+Passed Fwd filter:                         1  (1); expected 0.0 (1e-05)
+Initial search space (Z):                  1  [actual number of targets]
+Domain search space  (domZ):               1  [number of targets reported over threshold]
+# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.02
+# Mc/sec: 7.33
+//
