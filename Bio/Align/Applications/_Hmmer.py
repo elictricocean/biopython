@@ -25,6 +25,8 @@ class HmmScanCommandline(AbstractCommandline):
                     "prefer accessions over names in output"),
            _Option(["--cpu", "cpu"],
                     "number of parallel CPU workers to use for multithreads"),
+           _Option(["-o", "out"],
+                    "Output File", filename=True, equate=False ),
            _Argument(["hmm"],
                       "HMM Library",
                       checker_function=os.path.exists,
