@@ -77,7 +77,6 @@ class HMMER3Iterator(AlignmentIterator):
             self.outList.append( alignment )
         
         for hit in self.hitInfo:
-            records = [] #Alignment obj will put them all in a list anyway
             for domain in self.hitRecord[ hit ]:
                 queryStr  = "".join( self.alignMap[ hit ][ domain ][ 'query' ] )
                 targetStr = "".join( self.alignMap[ hit ][ domain ][ 'target' ] )

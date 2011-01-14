@@ -9,6 +9,13 @@ import os
 
 class HmmScanCommandline(AbstractCommandline):
     """
+    >>> from Bio.Align.Applications import HmmScanCommandline
+    >>> hmmer_bin="/usr/bin/hmmscan"
+    >>> hmmPath="/dev/null"
+    >>> seqPath="/dev/null"
+    >>> hmmscan_cmdline = HmmScanCommandline(hmmer_bin, hmm=hmmPath, input=seqPath)
+    >>> print hmmscan_cmdline
+    /usr/bin/hmmscan /dev/null /dev/null    
     """
     def __init__(self, cmd="hmmscan", **kwargs):
         assert cmd is not None
@@ -30,12 +37,12 @@ class HmmScanCommandline(AbstractCommandline):
            _Argument(["hmm"],
                       "HMM Library",
                       checker_function=os.path.exists,
-                      #types=["file"],
+                      filename=True,
                       is_required=True),
             _Argument(["input"],
                       "FASTA Query file",
                       checker_function=os.path.exists,
-                      #types=["file"],
+                      filename=True,
                       is_required=True),
         ]
         AbstractCommandline.__init__(self, cmd, **kwargs)
@@ -56,12 +63,12 @@ class HmmAlignCommandline(AbstractCommandline):
            _Argument(["hmm"],
                       "HMM Library",
                       checker_function=os.path.exists,
-                      #types=["file"],
+                      filename=True,
                       is_required=True),
            _Argument(["input"],
                       "FASTA Query file",
                       checker_function=os.path.exists,
-                      #types=["file"],
+                      filename=True,
                       is_required=True),
         ]
         AbstractCommandline.__init__(self, cmd, **kwargs)
@@ -80,7 +87,7 @@ class HmmPressCommandline(AbstractCommandline):
            _Argument(["hmm"],
                       "HMM Library",
                       checker_function=os.path.exists,
-                      #types=["file"],
+                      filename=True,
                       is_required=True),
         ]
         AbstractCommandline.__init__(self, cmd, **kwargs)

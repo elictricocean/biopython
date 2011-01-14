@@ -39,12 +39,7 @@ class HmmScanApplication(unittest.TestCase):
         self.hmmfile = "HMMER/PF07980.hmm"
         cmdline = HmmPressCommandline(hmm=self.hmmfile, force=True)
         self.assertEqual(str(eval(repr(cmdline))), str(cmdline))
-        child = subprocess.Popen(str(cmdline),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True,
-                                 shell=(sys.platform!="win32"))
-        stdoutdata, stderrdata = child.communicate()
+        stdoutdata, stderrdata = cmdline()
         
     def tearDown(self):
         if os.path.isfile("HMMER/PF07980.hmm.h3f"):
@@ -58,32 +53,19 @@ class HmmScanApplication(unittest.TestCase):
 
     def test_hmmscan(self):
         cmdline = HmmScanCommandline(hmm=self.hmmfile, input=self.infile1)
-        self.assertEqual(str(eval(repr(cmdline))), str(cmdline))
-        child = subprocess.Popen(str(cmdline),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True,
-                                 shell=(sys.platform!="win32"))
-        stdoutdata, stderrdata = child.communicate()
-        alignout = AlignIO.parse( StringIO( stdoutdata ), "hmmer3" )
-        align = list( alignout )
-        print align
-        for seq in align[0]:
+        self.assertEqual(str(eval(repr(cmdline))), str(cmdline))       
+        stdoutdata, stderrdata = cmdline()
+        alignout = AlignIO.read( StringIO(stdoutdata), "hmmer3" )
+        for seq in alignout[0]:
             print seq
         
     def test_hmmalign(self):
         cmdline = HmmAlignCommandline(hmm=self.hmmfile, input=self.infile1)
         self.assertEqual(str(eval(repr(cmdline))), str(cmdline))
-        child = subprocess.Popen(str(cmdline),
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 universal_newlines=True,
-                                 shell=(sys.platform!="win32"))
-        stdoutdata, stderrdata = child.communicate()
-        alignout = AlignIO.parse( StringIO( stdoutdata ), "stockholm" )
-        align = list( alignout )
-        assert len(align)==1
-        assert align[0][0].letter_annotations.has_key( "posterior_probability" )
+        stdoutdata, stderrdata = cmdline()
+        alignout = AlignIO.read( StringIO(stdoutdata), "stockholm" )
+        assert len(alignout)==1
+        assert alignout[0].letter_annotations.has_key("posterior_probability")
             
 
 if __name__ == "__main__":
