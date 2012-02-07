@@ -422,7 +422,7 @@ class Ontology(object):
         """
         raise NotImplementedError
 
-    def add_relationship(self, term1, term2, relationship):
+    def add_relationship(self, subject_term, object_term, relationship):
         """Add a relationship between two terms to the ontology.
 
         Ontologies are composed of triples in the following form:
@@ -509,6 +509,138 @@ class Ontology(object):
         - `term`: the term to look for; an instance of `GOTerm`.
         """
         return self.has_term(term)
+
+class GeneOntology(Ontology):
+    """
+    This class represents a gene ontology loaded into memory using native
+    python data structures
+    """
+    
+    def __init__(self, name=None, authority=None, identifier=None):
+        """
+        :Parameters:
+        - `name`: name for the ontology
+        - `authority`: the name of the authority for this ontology
+        - `identifier`: an identifier for the ontology
+
+        """
+        super(GeneOntology, self).__init__()
+        self.name = name
+        self.authority = authority
+        self.identifier = identifier
+        self._goid_dict = {}
+    
+    def add_term(self, term):
+        """Add a term to the ontology.
+
+        :Parameters:
+        - `term`: a `GOTerm` instance
+
+        """
+        if term.id in self._goid_dict:
+            raise ValueError("Term %s already exists in ontology." %
+                    term.id)
+        if term.ontology is not None:
+            raise ValueError("Term %s is already added to another ontology." %
+                    term.id)
+
+        # Add the term to this ontology
+        term.ontology = self
+        self._goid_dict[term.id] = term
+        #self._internal_dag.add_node(term.id)
+
+        # Register all the alternative IDs of this term in the
+        # internal dict
+        for alt_id in term.aliases:
+            self._goid_dict[alt_id] = term
+
+    def add_relationship(self, subject_term, object_term, relationship):
+        """Add a relationship between two terms to the ontology.
+
+        Ontologies are composed of triples in the following form:
+
+            `<SUBJECT> <PREDICATE> <OBJECT>`
+
+        e.g., "mitochondrion is_a organelle"
+
+        We represent this as `term1 relationship term2`.
+
+        :Parameters:
+        - `subject_term`: the subject term; an instance of `GOTerm`.
+        - `object_term`: the object term; an instance of `GOTerm`.
+        - `relationship`: the predicate term (relationship type)
+
+        """
+        # add the terms to the internal storage if they're not already
+        # there
+        for term in (subject_term, object_term):
+            if term not in self:
+                self.add_term(term)
+        #self._internal_dag.add_edge(subject_term.id, object_term.id, \
+        #                            relationship=relationship)
+
+
+    def get_term_by_id(self, term_id):
+        """Retrieve a term from the ontology by its GO ID.
+
+        This method also supports alternative IDs.
+
+        Raises `NoSuchTermError` if the given term is not in this
+        ontology.
+
+        :Parameters:
+        - `term_id`: a GO identifier (e.g., "GO:1234567")
+        """
+        try:
+            return self._goid_dict[term_id]
+        except KeyError:
+            raise NoSuchTermError(term_id)
+            
+    
+    def has_term(self, term):
+        """Checks whether the given term is in this ontology or not.
+
+        Raises `InternalStorageInconsistentError` in the event that
+        internal storage shows inconsistent states of storage for the
+        given term.
+
+        :Parameters:
+        - `term`: a `GOTerm` instance
+
+        """
+        return term.id in self._goid_dict
+
+    def get_relationships(self, subject_term=None, object_term=None):
+        """Returns all the relationships that were added to the two
+        given terms.
+
+        :Parameters:
+        - `subject_term`: the subject term; an instance of `GOTerm`.
+          ``None`` means all terms.
+        - `object_term`: the object term; an instance of `GOTerm`.
+          ``None`` means all terms.
+
+        :Returns:
+        a (possibly empty) list of relationships where `subject_term`
+        stands as the subject and `object_term` stands as the object.
+
+        See `Ontology.get_relationships` for more details.
+        """
+        if subject_term is None and object_term is None:
+            result = self._internal_dag.edges(data=True)
+        elif object_term is None:
+            result = self._internal_dag.out_edges(subject_term.id, data=True)
+        elif subject_term is None:
+            result = self._internal_dag.in_edges(object_term.id, data=True)
+        else:
+            result = self._internal_dag.out_edges(subject_term.id, data=True)
+            result = [edge for edge in result if edge[1] == object_term.id]
+
+        # Construct the Relationship objects here on-the-fly
+        return [data["relationship"](
+                self._goid_dict[src], self._goid_dict[dst]
+            ) for src, dst, data in result]
+
 
 
 class GeneOntologyNX(Ontology):

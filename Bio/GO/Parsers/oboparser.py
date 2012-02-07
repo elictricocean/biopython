@@ -31,7 +31,7 @@ from warnings import warn
 import re
 import tokenize
 
-from Bio.GO.ontology import GeneOntologyNX, GOTerm, Ontology, \
+from Bio.GO.ontology import GeneOntology, GeneOntologyNX, GOTerm, Ontology, \
                             IsARelationship, PartOfRelationship, \
                             RegulatesRelationship, \
                             PositivelyRegulatesRelationship, \
@@ -322,7 +322,7 @@ class Parser(object):
     def __iter__(self):
         return self.stanzas()
 
-    def parse(self, load_obsolete=False, ontology_factory=GeneOntologyNX, \
+    def parse(self, load_obsolete=False, ontology_factory=GeneOntology, \
               term_factory=Stanza.to_term):
         """Parses the file handle given during construction time and
         returns an appropriately constructed `Ontology` instance.
