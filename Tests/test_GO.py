@@ -322,14 +322,14 @@ class GenericOntologyTestMixin(object):
         self.failIf(self.ontology.has_term(term))
 
 
-class GeneOntologyNXTests(unittest.TestCase, GenericOntologyTestMixin):
-    """Test cases for `GO.ontology.GeneOntologyNX`."""
+class GeneOntologyTests(unittest.TestCase, GenericOntologyTestMixin):
+    """Test cases for `GO.ontology.GeneOntology`."""
 
     def setUp(self):
         self.create_empty_ontology()
 
     def create_empty_ontology(self):
-        self.ontology = GO.ontology.GeneOntologyNX('biological_process')
+        self.ontology = GO.ontology.GeneOntology('biological_process')
 
     def prepare_ontology(self):
         """Prepares ``self.ontology`` by adding all the terms and

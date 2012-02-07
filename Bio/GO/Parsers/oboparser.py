@@ -31,7 +31,7 @@ from warnings import warn
 import re
 import tokenize
 
-from Bio.GO.ontology import GeneOntology, GeneOntologyNX, GOTerm, Ontology, \
+from Bio.GO.ontology import GeneOntology, GOTerm, Ontology, \
                             IsARelationship, PartOfRelationship, \
                             RegulatesRelationship, \
                             PositivelyRegulatesRelationship, \
