@@ -316,6 +316,24 @@ class PartOfRelationship(InheritableGORelationship):
     names = ["part_of"]
 
 
+class HasPartRelationship(InheritableGORelationship):
+    """A class representing the 'has_part' GO relationship.
+
+    """
+
+    __slots__ = ()
+    names = ["has_part"]
+
+
+class OccursInRelationship(InheritableGORelationship):
+    """A class representing the 'occurs_in' GO relationship.
+
+    """
+
+    __slots__ = ()
+    names = ["occurs_in"]
+
+
 class RegulatesRelationship(GORelationship):
     """A class representing the 'regulates' GO relationship.
 

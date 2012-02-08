@@ -33,6 +33,8 @@ import tokenize
 
 from Bio.GO.ontology import GeneOntology, GOTerm, Ontology, \
                             IsARelationship, PartOfRelationship, \
+                            HasPartRelationship, \
+                            OccursInRelationship, \
                             RegulatesRelationship, \
                             PositivelyRegulatesRelationship, \
                             NegativelyRegulatesRelationship
@@ -353,6 +355,8 @@ class Parser(object):
         rel_types = {
             "is_a": IsARelationship,
             "part_of": PartOfRelationship,
+            "has_part": HasPartRelationship,
+            "occurs_in": OccursInRelationship,
             "regulates": RegulatesRelationship,
             "positively_regulates": PositivelyRegulatesRelationship,
             "negatively_regulates": NegativelyRegulatesRelationship
@@ -373,7 +377,9 @@ class Parser(object):
                 if rel[1]:
                     relationships.append(rel)
                 else:
-                    warn("ignoring unknown relationship: %r %s %r" % rel)
+                    import pdb
+                    pdb.set_trace()
+                    warn("ignoring unknown relationship: %s %s %s" % rel)
 
         # Add the relationships
         for subject_term, rel, ancestor in relationships:
