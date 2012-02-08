@@ -377,8 +377,6 @@ class Parser(object):
                 if rel[1]:
                     relationships.append(rel)
                 else:
-                    import pdb
-                    pdb.set_trace()
                     warn("ignoring unknown relationship: %s %s %s" % rel)
 
         # Add the relationships
