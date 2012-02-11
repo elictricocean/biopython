@@ -63,13 +63,14 @@ class OntologySQLWriter(object):
         for sql in init_sql.split(";"):
             self.cursor.execute(sql)
         self.id_map = { 'is_a' : 0 }
-        insert_term = "INSERT OR REPLACE INTO term(id, name, acc, term_type) VALUES(0,'is_a','relationship','is_a')"
+        insert_term = "INSERT OR REPLACE INTO term(id, name, acc, term_type) VALUES(0,'is_a', 'is_a', 'relationship')"
         self.cursor.execute(insert_term)
     
     def write_record(self, record):
-        if record.tags['id'][0] not in self.id_map:
-            self.id_map[record.tags['id'][0]] = len(self.id_map)
-        insert_term = "INSERT OR REPLACE INTO term(id, name, acc, term_type) VALUES(?,?,?,?)"
+        term_id = str(record.tags['id'][0])
+        if term_id not in self.id_map:
+            self.id_map[term_id] = len(self.id_map)
+        insert_term = "INSERT INTO term(id, name, acc, term_type) VALUES(?,?,?,?)"
         term_type = ""
         if record.name == "Term":
             term_type = "gene_ontology"
@@ -78,7 +79,7 @@ class OntologySQLWriter(object):
         
         self.cursor.execute(insert_term, 
             [ 
-                self.id_map[record.tags['id'][0]], 
+                self.id_map[term_id], 
                 str(record.tags['name'][0]), 
                 str(record.tags['id'][0]),
                 term_type
@@ -88,16 +89,15 @@ class OntologySQLWriter(object):
         for tag in record.tags:
             if tag == "is_a":
                 for a in record.tags["is_a"]:
-                    if a not in self.id_map:
-                        self.id_map[a] = len(self.id_map)                        
+                    if str(a) not in self.id_map:
+                        self.id_map[str(a)] = len(self.id_map)                        
                     insert_term2term = "INSERT INTO term2term(relationship_type_id, term1_id, term2_id) VALUES(?,?,?)"
                     self.cursor.execute(insert_term2term,
                         [
                             self.id_map['is_a'], 
-                            self.id_map[record.tags['id'][0]], 
-                            self.id_map[a]
+                            self.id_map[term_id], 
+                            self.id_map[str(a)]
                         ]
                     )
-                
-        self.conn.commit()
+               
     

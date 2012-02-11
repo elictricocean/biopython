@@ -35,8 +35,12 @@ class EvidenceCode(Enum):
     ISA = "Inferred from sequence alignment"
     ISM = "Inferred from sequence model"
     IGC = "Inferred from genomic context"
+    IBA = "Inferred from Biological aspect of Ancestor"
+    IBD = "Inferred from Biological aspect of Descendant"
+    IKR = "Inferred from Key Residues"
+    IRD = "Inferred from Rapid Divergence"
     RCA = "Inferred from reviewed computational analysis"
-
+    
     TAS = "Traceable author statement"
     NAS = "Non-traceable author statement"
 

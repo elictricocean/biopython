@@ -11,6 +11,8 @@ __email__ = 'chris DOT lasher <AT> gmail DOT com'
 
 import Bio.GO.Parsers.oboparser
 import Bio.GO.Parsers.annotation
+import Bio.GO.sql
+import Bio.GO.ontology
 
 def read(handle, format="obo"):
     
@@ -19,3 +21,12 @@ def read(handle, format="obo"):
     
     if format=="goa":
         return Bio.GO.Parsers.annotation.Parser(handle)
+    
+    if format=="sql":
+        return Bio.GO.ontology.GeneOntologySQL(handle)
+
+
+def write(handle, format="sql"):
+    if format=="sql":
+        out = Bio.GO.sql.OntologySQLWriter(handle)
+        return out
