@@ -459,7 +459,7 @@ class HMMResultsIO:
             res = re.search(r'^Domain and alignment annotation for each [sequence|model]', line )
             if res:
                 return
-            res = re.search(r'^Domain annotation for each model ', line)
+            res = re.search(r'^Domain annotation for each [sequence|model]', line)
             if res:
                 return
                 
@@ -475,6 +475,7 @@ class HMMResultsIO:
                 
             #Assume that we have a sequence match
             sMatch = re.split( r'\s+', line )
+            print len( sMatch ), "on line", line, len(line)
             if not (len( sMatch ) >= 10 ):
                 raise FormatError( "Expected at least 10 pieces of data: %s" % (line) )
             desc = "-"
@@ -612,18 +613,18 @@ class HMMResultsIO:
             pattern1 = None
             pattern2 = None
             if ( hmmName and hmmRes.program == 'hmmsearch'):
-                pattern1 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (hmmName) )
-                pattern2 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (id) )
+                pattern1 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (re.escape(hmmName)))
+                pattern2 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (re.escape(id)))
             if ( seqName and hmmRes.program == 'hmmscan'):
                 tmpSeqName = seqName
                 tmpSeqName = re.sub(r'\|', r'\\|', tmpSeqName)
-                pattern1 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (id))
-                pattern2 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (tmpSeqName) )
+                pattern1 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (re.escape(id)))
+                pattern2 = re.compile(r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (re.escape(tmpSeqName)))
             if ( seqName and hmmRes.program == 'phmmer'):
                 seqName = re.sub(r'\|', r'\\|', seqName)
                 id = re.sub( r'\|', r'\\|', id)
-                pattern1 = re.compile( r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (seqName))
-                pattern2 = re.compile( r'^\s+%s\s+\d+\s+(\S+)\s+\d+/' % (id))
+                pattern1 = re.compile( r'^\s+%s\s+\d+\s+(\S+)\s+\d+' % (re.escape(seqName)))
+                pattern2 = re.compile( r'^\s+%s\s+\d+\s+(\S+)\s+\d+/' % (re.escape(id)))
             
             recurse = 0
             matchNo = None
@@ -632,7 +633,7 @@ class HMMResultsIO:
                 line = hs.readline()
                 if not line:
                     raise EOF
-                #print string.strip(line)
+                #string.strip(line)
                 res = pattern1.search( line )
                 if res:
                     try:
@@ -641,12 +642,14 @@ class HMMResultsIO:
                         units[ matchNo - 1 ].hmmalign['hmm'] = res.group( 1 )
                     hmmlen = len( res.group(1) )
                     continue
-                res = pattern2.search( line )
+                res = pattern2.search( line.encode("ascii") )
                 if res:
+                    #print res.groups(), line.strip()
+                    # print line.split(" ")[-2]
                     try:
-                        units[ matchNo - 1 ].hmmalign['seq'] += res.group( 1 )
+                        units[ matchNo - 1 ].hmmalign['seq'] += res.group(1)
                     except KeyError:
-                        units[ matchNo - 1 ].hmmalign['seq'] = res.group( 1 )
+                        units[ matchNo - 1 ].hmmalign['seq'] = res.group(1)
                     continue
                 res = re.search(r'^\s+([0-9\*\.]+)\s+PP$', line) 
                 if res:
